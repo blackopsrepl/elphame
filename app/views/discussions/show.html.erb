@@ -1,0 +1,286 @@
+<div class="max-w-4xl mx-auto fade-in-up">
+  <!-- Header with back link -->
+  <div class="mb-6">
+    <div class="text-sm text-gray-600 mb-2">
+      <%= link_to "← Back to /#{@discussion.realm.slug}/", realm_path(@discussion.realm.slug), class: "hover:text-purple-400 transition" %>
+    </div>
+
+    <!-- Flash messages (turbo-replaceable) -->
+    <div id="flash-messages">
+      <%= render "shared/flash", notice: flash[:notice], alert: flash[:alert] %>
+    </div>
+
+    <!-- Discussion header (turbo-replaceable) -->
+    <div id="discussion-header">
+      <%= render "discussions/header", discussion: @discussion %>
+    </div>
+
+    <!-- Label Picker (admin only, turbo-replaceable) -->
+    <% if current_user&.admin? %>
+      <%= render "discussions/label_picker", discussion: @discussion %>
+    <% end %>
+  </div>
+
+  <!-- Original Post -->
+  <% first_post = @posts.first %>
+  <% if first_post %>
+    <div id="post-<%= first_post.id %>" class="mb-10 p-6 rounded-lg border <%= first_post.user.present? ? 'border-purple-900/40 bg-purple-950/20' : 'border-gray-800 bg-gray-900/30' %> glow-border">
+      <div class="flex items-start gap-4">
+        <!-- Avatar -->
+        <div class="flex-shrink-0">
+          <% if first_post.has_avatar? %>
+            <%= image_tag first_post.avatar, class: "w-20 h-20 rounded-full object-cover avatar-glow" %>
+          <% elsif first_post.user.present? %>
+            <div class="w-20 h-20 rounded-full bg-purple-900 flex items-center justify-center text-purple-300 font-bold text-2xl avatar-glow">
+              <%= first_post.user.username[0].upcase %>
+            </div>
+          <% else %>
+            <div class="w-20 h-20 rounded-full bg-gray-800 flex items-center justify-center text-4xl">👤</div>
+          <% end %>
+        </div>
+
+        <!-- Content -->
+        <div class="flex-1 min-w-0">
+          <div class="flex items-center gap-3 mb-3">
+            <span class="<%= first_post.user.present? ? 'text-purple-300' : 'text-gray-400' %> font-semibold text-base">
+              <%= first_post.display_name %>
+            </span>
+            <span class="text-xs text-gray-600">
+              <%= first_post.created_at.strftime("%Y-%m-%d %H:%M:%S") %>
+            </span>
+            <span class="text-xs px-2 py-0.5 rounded bg-purple-900/40 text-purple-300 border border-purple-800/50">
+              Original Post
+            </span>
+          </div>
+
+          <div class="prose prose-elphame prose-sm max-w-none">
+            <%= simple_format(first_post.content, class: "text-gray-300 whitespace-pre-wrap leading-relaxed") %>
+          </div>
+
+          <% if first_post.image.attached? %>
+            <div class="mt-4">
+              <%= image_tag first_post.image, class: "max-w-full rounded-lg border border-purple-900/30 shadow-2xl" %>
+            </div>
+          <% end %>
+
+          <!-- Star Rating for Original Post -->
+          <div class="mt-4 pt-4 border-t border-purple-900/30">
+            <%= render "star_ratings/star_rating", post: first_post %>
+          </div>
+        </div>
+      </div>
+    </div>
+  <% else %>
+    <!-- Fallback for discussions without first post (legacy) -->
+    <div class="mb-10 p-6 rounded-lg border <%= @discussion.user.present? ? 'border-purple-900/40 bg-purple-950/20' : 'border-gray-800 bg-gray-900/30' %> glow-border">
+      <div class="flex items-start gap-4">
+        <div class="flex-shrink-0">
+          <% if @discussion.has_avatar? %>
+            <%= image_tag @discussion.avatar, class: "w-20 h-20 rounded-full object-cover avatar-glow" %>
+          <% elsif @discussion.user.present? %>
+            <div class="w-20 h-20 rounded-full bg-purple-900 flex items-center justify-center text-purple-300 font-bold text-2xl avatar-glow">
+              <%= @discussion.user.username[0].upcase %>
+            </div>
+          <% else %>
+            <div class="w-20 h-20 rounded-full bg-gray-800 flex items-center justify-center text-4xl">👤</div>
+          <% end %>
+        </div>
+        <div class="flex-1 min-w-0">
+          <div class="flex items-center gap-3 mb-3">
+            <span class="<%= @discussion.user.present? ? 'text-purple-300' : 'text-gray-400' %> font-semibold text-base">
+              <%= @discussion.display_name %>
+            </span>
+            <span class="text-xs text-gray-600">
+              <%= @discussion.created_at.strftime("%Y-%m-%d %H:%M:%S") %>
+            </span>
+          </div>
+          <div class="prose prose-elphame prose-sm max-w-none">
+            <%= simple_format(@discussion.content, class: "text-gray-300 whitespace-pre-wrap leading-relaxed") %>
+          </div>
+          <% if @discussion.image.attached? %>
+            <div class="mt-4">
+              <%= image_tag @discussion.image, class: "max-w-full rounded-lg border border-purple-900/30 shadow-2xl" %>
+            </div>
+          <% end %>
+          <div class="mt-4 text-xs text-gray-600 italic">
+            (Legacy thread - first post not created yet. Star ratings available on replies.)
+          </div>
+        </div>
+      </div>
+    </div>
+  <% end %>
+
+  <!-- Replies Section -->
+  <% replies = @posts.count > 1 ? @posts[1..-1] : [] %>
+  <% if replies.any? %>
+    <div class="mb-10 space-y-4">
+      <h2 class="text-lg font-semibold text-gray-400 mb-4 flex items-center gap-2">
+        <span>💬</span>
+        <span><%= replies.count %> <%= 'reply'.pluralize(replies.count) %></span>
+      </h2>
+
+      <% replies.each do |post| %>
+        <div id="post-<%= post.id %>" class="post-container p-4 rounded-lg border border-gray-800 <%= post.user.present? ? 'bg-purple-950/10' : 'bg-gray-900/20' %>">
+          <div class="flex items-start gap-3">
+
+            <!-- Avatar -->
+            <div class="flex-shrink-0">
+              <% if post.has_avatar? %>
+                <%= image_tag post.avatar, class: "w-14 h-14 rounded-full object-cover avatar-glow" %>
+              <% elsif post.user.present? %>
+                <div class="w-14 h-14 rounded-full bg-purple-900 flex items-center justify-center text-purple-300 font-semibold text-lg avatar-glow">
+                  <%= post.user.username[0].upcase %>
+                </div>
+              <% else %>
+                <div class="w-14 h-14 rounded-full bg-gray-800 flex items-center justify-center text-gray-600 text-2xl">👤</div>
+              <% end %>
+            </div>
+
+            <!-- Post Content -->
+            <div class="flex-1 min-w-0">
+              <div class="flex items-center gap-3 mb-2 flex-wrap">
+                <span class="<%= post.user.present? ? 'text-purple-300' : 'text-gray-400' %> font-medium text-sm">
+                  <%= post.display_name %>
+                </span>
+                <span class="text-xs text-gray-600">
+                  <%= post.created_at.strftime("%Y-%m-%d %H:%M:%S") %>
+                </span>
+
+                <!-- Actions -->
+                <div class="flex items-center gap-2 ml-auto">
+                  <button
+                    onclick="quotePost(<%= post.id %>, '<%= j(post.content.gsub("\n", "\\n")) %>')"
+                    class="action-button text-xs px-2 py-1 rounded bg-purple-900/30 hover:bg-purple-800/50 text-purple-400 border border-purple-900/30"
+                  >
+                    💬 Quote
+                  </button>
+
+                  <% if user_signed_in? && (post.user == current_user || current_user.admin?) %>
+                    <%= link_to "✏️", edit_post_path(post),
+                        class: "action-button text-sm px-2 py-1 rounded bg-blue-900/30 hover:bg-blue-800/50 text-blue-400 border border-blue-900/30",
+                        data: { tooltip: "Edit" } %>
+                    <%= button_to "🗑️", post_path(post),
+                        method: :delete,
+                        data: { turbo_confirm: "Delete this reply?" },
+                        class: "danger-button text-sm px-2 py-1 rounded bg-red-900/30 hover:bg-red-800/50 text-red-400 border border-red-900/30" %>
+                  <% end %>
+                </div>
+              </div>
+
+              <!-- Quoted Post Reference -->
+              <% if post.quoted_post.present? %>
+                <div class="mb-3 p-3 rounded bg-gray-900/70 border-l-2 border-purple-700">
+                  <div class="text-xs text-gray-500 mb-1">
+                    Quoting <%= post.quoted_post.display_name %>:
+                  </div>
+                  <div class="text-xs text-gray-400 italic line-clamp-3">
+                    <%= truncate(post.quoted_post.content, length: 150) %>
+                  </div>
+                </div>
+              <% end %>
+
+              <!-- Post Content -->
+              <div class="prose prose-elphame prose-sm max-w-none">
+                <%= simple_format(post.content, class: "text-gray-300 whitespace-pre-wrap text-sm leading-relaxed") %>
+              </div>
+
+              <% if post.image.attached? %>
+                <div class="mt-3">
+                  <%= image_tag post.image, class: "max-w-full max-h-96 rounded-lg border border-purple-900/30 shadow-xl" %>
+                </div>
+              <% end %>
+
+              <!-- Star Rating -->
+              <div class="mt-3 pt-3 border-t border-gray-800/50">
+                <%= render "star_ratings/star_rating", post: post %>
+              </div>
+            </div>
+          </div>
+        </div>
+      <% end %>
+    </div>
+  <% end %>
+
+  <!-- Reply Form -->
+  <div class="sticky bottom-0 mt-8 p-6 rounded-lg border border-purple-900/40 bg-gray-900/90 backdrop-blur-lg shadow-2xl">
+    <h3 class="text-lg font-semibold text-purple-300 mb-4 flex items-center gap-2">
+      <span>💬</span>
+      <span>Cast Your Voice Into The Void</span>
+    </h3>
+
+    <%= form_with model: @post, url: discussion_posts_path(@discussion), id: 'reply-form', class: "space-y-4" do |f| %>
+      <%= f.hidden_field :quoted_post_id, id: 'quoted_post_id' %>
+
+      <% if user_signed_in? %>
+        <div class="flex items-center gap-3 p-3 bg-purple-950/30 rounded-lg border border-purple-900/40">
+          <% if current_user.avatar.attached? %>
+            <%= image_tag current_user.avatar_thumbnail, class: "w-12 h-12 rounded-full object-cover avatar-glow" %>
+          <% else %>
+            <div class="w-12 h-12 rounded-full bg-purple-900 flex items-center justify-center text-purple-300 font-bold avatar-glow">
+              <%= current_user.username[0].upcase %>
+            </div>
+          <% end %>
+          <div>
+            <div class="text-purple-300 font-semibold"><%= current_user.username %></div>
+            <div class="text-xs text-gray-500">Posting as registered user</div>
+          </div>
+        </div>
+      <% else %>
+        <div>
+          <%= f.label :soft_username, "Name (optional)", class: "block text-sm font-medium text-purple-300 mb-2" %>
+          <%= f.text_field :soft_username,
+              class: "elphame-input w-full px-4 py-3 bg-gray-950 border border-gray-800 rounded-lg text-gray-200 focus:border-purple-700 focus:outline-none transition",
+              placeholder: "Leave blank for Anonymous..." %>
+          <p class="mt-1 text-xs text-gray-600">Soft names cannot match registered usernames.</p>
+        </div>
+      <% end %>
+
+      <div>
+        <%= f.label :image, "Image (optional)", class: "block text-sm font-medium text-purple-300 mb-2" %>
+        <%= f.file_field :image,
+            accept: "image/*",
+            class: "elphame-input w-full px-4 py-3 bg-gray-950 border border-gray-800 rounded-lg text-gray-200 focus:border-purple-700 focus:outline-none transition file:mr-4 file:py-2 file:px-4 file:rounded-lg file:border-0 file:text-sm file:font-semibold file:bg-purple-900/70 file:text-purple-200 hover:file:bg-purple-800 file:cursor-pointer file:transition" %>
+      </div>
+
+      <div data-controller="mention-autocomplete">
+        <%= f.label :content, "Your Reply", class: "block text-sm font-medium text-purple-300 mb-2" %>
+        <%= f.text_area :content,
+            rows: 6,
+            id: 'reply-content',
+            data: {
+              mention_autocomplete_target: "input",
+              action: "input->mention-autocomplete#onInput keydown->mention-autocomplete#onKeydown blur->mention-autocomplete#onBlur"
+            },
+            class: "elphame-input w-full px-4 py-3 bg-gray-950 border border-gray-800 rounded-lg text-gray-200 focus:border-purple-700 focus:outline-none transition font-mono text-sm",
+            placeholder: "Whisper into the darkness... (type @ to mention)" %>
+        <p class="mt-2 text-xs text-gray-600">Max 2000 characters. Type @ to mention someone. Shape your words with care.</p>
+      </div>
+
+      <%= f.submit "Post Reply", class: "action-button px-8 py-3 bg-purple-900 hover:bg-purple-800 border border-purple-700 rounded-lg text-purple-200 font-bold cursor-pointer transition text-base shadow-lg" %>
+    <% end %>
+  </div>
+</div>
+
+<script>
+function quotePost(postId, content) {
+  const textarea = document.getElementById('reply-content');
+  const quotedPostField = document.getElementById('quoted_post_id');
+
+  // Format the quote
+  const lines = content.split('\\n');
+  const quotedText = lines.map(line => '> ' + line).join('\\n');
+
+  // Add quoted text to textarea
+  textarea.value = quotedText + '\\n\\n';
+
+  // Set the quoted_post_id
+  quotedPostField.value = postId;
+
+  // Focus textarea at the end
+  textarea.focus();
+  textarea.setSelectionRange(textarea.value.length, textarea.value.length);
+
+  // Scroll to form
+  document.getElementById('reply-form').scrollIntoView({ behavior: 'smooth', block: 'center' });
+}
+</script>

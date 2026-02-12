@@ -1,0 +1,13 @@
+the_writ:
+  name: "The Writ"
+  slug: "the-writ"
+  description: "Where decree becomes deed."
+  position: 0
+  discussions_count: 2
+
+random:
+  name: "Random"
+  slug: "random"
+  description: "Chaos. Anything. Everything."
+  position: 5
+  discussions_count: 1

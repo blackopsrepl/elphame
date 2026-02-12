@@ -1,0 +1,74 @@
+<div class="max-w-3xl mx-auto">
+  <div class="mb-6">
+    <div class="text-sm text-gray-600 mb-1">
+      <%= link_to "← Back to /#{@realm.slug}/", realm_path(@realm.slug), class: "hover:text-purple-400 transition" %>
+    </div>
+    <h1 class="text-3xl font-bold text-purple-400">Start New Thread</h1>
+    <p class="text-gray-500 mt-1">in /<%= @realm.slug %>/</p>
+  </div>
+
+  <%= form_with model: @discussion, url: realm_discussions_path(@realm.slug), class: "space-y-6" do |f| %>
+    <% if @discussion.errors.any? %>
+      <div class="p-4 rounded border border-red-800/50 bg-red-950/30 text-red-300">
+        <h3 class="font-semibold mb-2">The shadows reject your offering:</h3>
+        <ul class="list-disc list-inside space-y-1 text-sm">
+          <% @discussion.errors.full_messages.each do |message| %>
+            <li><%= message %></li>
+          <% end %>
+        </ul>
+      </div>
+    <% end %>
+
+    <div>
+      <%= f.label :author_name, "Name (optional)", class: "block text-sm font-medium text-gray-400 mb-2" %>
+      <%= f.text_field :author_name, class: "w-full px-4 py-3 bg-gray-900 border border-gray-800 rounded text-gray-200 focus:border-purple-800 focus:outline-none transition", placeholder: "Leave blank for Anonymous..." %>
+      <p class="mt-1 text-xs text-gray-600">Dare to be known?</p>
+    </div>
+
+    <div>
+      <%= f.label :subject, "Subject (optional)", class: "block text-sm font-medium text-gray-400 mb-2" %>
+      <%= f.text_field :subject, class: "w-full px-4 py-3 bg-gray-900 border border-gray-800 rounded text-gray-200 focus:border-purple-800 focus:outline-none transition", placeholder: "A title for your thread..." %>
+    </div>
+
+    <div>
+      <%= f.label :image, "Image (optional)", class: "block text-sm font-medium text-gray-400 mb-2" %>
+      <%= f.file_field :image, accept: "image/*", class: "w-full px-4 py-3 bg-gray-900 border border-gray-800 rounded text-gray-200 focus:border-purple-800 focus:outline-none transition file:mr-4 file:py-2 file:px-4 file:rounded file:border-0 file:text-sm file:font-semibold file:bg-purple-900 file:text-purple-200 hover:file:bg-purple-800 file:cursor-pointer" %>
+      <p class="mt-1 text-xs text-gray-600">Manifest your vision (jpg, png, gif, webp)</p>
+    </div>
+
+    <div>
+      <label class="block text-sm font-medium text-gray-400 mb-2">Thread Type</label>
+      <div class="grid grid-cols-2 md:grid-cols-3 gap-3">
+        <% Label.active.user_selectable.where(category: "type").order(:position).each do |label| %>
+          <label class="flex items-center gap-3 p-3 rounded-lg border border-gray-800 bg-gray-900/30 cursor-pointer hover:border-purple-900/50 transition has-[:checked]:border-purple-700 has-[:checked]:bg-purple-950/50">
+            <input type="radio" name="thread_type" value="<%= label.name %>"
+                   <%= 'checked' if label.name == 'general' %>
+                   class="text-purple-600 focus:ring-purple-500">
+            <span class="text-sm text-gray-400">
+              <%= label.display_name %>
+            </span>
+          </label>
+        <% end %>
+      </div>
+      <p class="mt-1 text-xs text-gray-600">Classify your thread</p>
+    </div>
+
+    <div data-controller="mention-autocomplete">
+      <%= f.label :content, "Message", class: "block text-sm font-medium text-gray-400 mb-2" %>
+      <%= f.text_area :content,
+          rows: 10,
+          data: {
+            mention_autocomplete_target: "input",
+            action: "input->mention-autocomplete#onInput keydown->mention-autocomplete#onKeydown blur->mention-autocomplete#onBlur"
+          },
+          class: "w-full px-4 py-3 bg-gray-900 border border-gray-800 rounded text-gray-200 focus:border-purple-800 focus:outline-none transition font-mono text-sm",
+          placeholder: "Speak into the void... (type @ to mention)" %>
+      <p class="mt-2 text-xs text-gray-600">Max 5000 characters. Type @ to mention someone. Permanent.</p>
+    </div>
+
+    <div class="flex items-center justify-between pt-4 border-t border-gray-800">
+      <%= link_to "Cancel", realm_path(@realm.slug), class: "text-gray-500 hover:text-gray-400 transition" %>
+      <%= f.submit "Conjure Thread", class: "px-8 py-3 bg-purple-900 hover:bg-purple-800 border border-purple-800 rounded text-purple-200 font-semibold cursor-pointer transition" %>
+    </div>
+  <% end %>
+</div>

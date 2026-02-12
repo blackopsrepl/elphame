@@ -1,0 +1,63 @@
+<div class="max-w-3xl mx-auto fade-in-up">
+  <div class="mb-6">
+    <div class="text-sm text-gray-600 mb-2">
+      <%= link_to "← Cancel & Return", discussion_path(@discussion), class: "hover:text-purple-400 transition" %>
+    </div>
+    <h1 class="text-3xl font-bold text-purple-400 glow-text">Reshape The Shadows</h1>
+    <p class="text-gray-500 mt-2">Edit your thread. Images and author cannot be changed.</p>
+  </div>
+
+  <div class="p-8 rounded-lg border border-purple-900/40 bg-gray-900/50 glow-border">
+    <%= form_with model: @discussion, url: discussion_path(@discussion), method: :patch, class: "space-y-6" do |f| %>
+
+      <% if @discussion.errors.any? %>
+        <div class="p-4 rounded-lg bg-red-900/20 border border-red-800 text-red-300">
+          <p class="font-semibold mb-2">The shadows reject your changes:</p>
+          <ul class="list-disc list-inside text-sm space-y-1">
+            <% @discussion.errors.full_messages.each do |message| %>
+              <li><%= message %></li>
+            <% end %>
+          </ul>
+        </div>
+      <% end %>
+
+      <div>
+        <%= f.label :subject, "Subject", class: "block text-sm font-medium text-purple-300 mb-2" %>
+        <%= f.text_field :subject,
+            class: "elphame-input w-full px-4 py-3 bg-gray-950 border border-gray-800 rounded-lg text-gray-200 focus:border-purple-700 focus:outline-none transition",
+            placeholder: "Give your thread a title..." %>
+      </div>
+
+      <div>
+        <label class="block text-sm font-medium text-purple-300 mb-2">Thread Type</label>
+        <% current_type = @discussion.thread_type_label&.name %>
+        <div class="grid grid-cols-2 md:grid-cols-3 gap-3">
+          <% Label.active.user_selectable.where(category: "type").order(:position).each do |label| %>
+            <label class="flex items-center gap-3 p-3 rounded-lg border cursor-pointer hover:border-purple-900/50 transition has-[:checked]:border-purple-700 has-[:checked]:bg-purple-950/50 <%= current_type == label.name ? 'border-purple-700 bg-purple-950/50' : 'border-gray-800 bg-gray-900/30' %>">
+              <input type="radio" name="thread_type" value="<%= label.name %>"
+                     <%= 'checked' if current_type == label.name %>
+                     class="text-purple-600 focus:ring-purple-500">
+              <span class="text-sm <%= current_type == label.name ? 'text-purple-300' : 'text-gray-400' %>">
+                <%= label.display_name %>
+              </span>
+            </label>
+          <% end %>
+        </div>
+      </div>
+
+      <div>
+        <%= f.label :content, "Content", class: "block text-sm font-medium text-purple-300 mb-2" %>
+        <%= f.text_area :content,
+            rows: 12,
+            class: "elphame-input w-full px-4 py-3 bg-gray-950 border border-gray-800 rounded-lg text-gray-200 focus:border-purple-700 focus:outline-none transition font-mono text-sm",
+            placeholder: "Speak your truth..." %>
+        <p class="mt-2 text-xs text-gray-600">Max 5000 characters.</p>
+      </div>
+
+      <div class="flex items-center gap-4">
+        <%= f.submit "Save Changes", class: "action-button px-8 py-3 bg-purple-900 hover:bg-purple-800 border border-purple-700 rounded-lg text-purple-200 font-bold cursor-pointer transition shadow-lg" %>
+        <%= link_to "Cancel", discussion_path(@discussion), class: "px-6 py-3 text-gray-400 hover:text-purple-300 transition" %>
+      </div>
+    <% end %>
+  </div>
+</div>

@@ -1,0 +1,39 @@
+<div class="max-w-3xl mx-auto fade-in-up">
+  <div class="mb-6">
+    <div class="text-sm text-gray-600 mb-2">
+      <%= link_to "← Cancel & Return", discussion_path(@discussion, anchor: "post-#{@post.id}"), class: "hover:text-purple-400 transition" %>
+    </div>
+    <h1 class="text-3xl font-bold text-purple-400 glow-text">Reshape Your Echo</h1>
+    <p class="text-gray-500 mt-2">Edit your reply. Images cannot be changed.</p>
+  </div>
+
+  <div class="p-8 rounded-lg border border-purple-900/40 bg-gray-900/50 glow-border">
+    <%= form_with model: @post, url: post_path(@post), method: :patch, class: "space-y-6" do |f| %>
+      
+      <% if @post.errors.any? %>
+        <div class="p-4 rounded-lg bg-red-900/20 border border-red-800 text-red-300">
+          <p class="font-semibold mb-2">The shadows reject your changes:</p>
+          <ul class="list-disc list-inside text-sm space-y-1">
+            <% @post.errors.full_messages.each do |message| %>
+              <li><%= message %></li>
+            <% end %>
+          </ul>
+        </div>
+      <% end %>
+
+      <div>
+        <%= f.label :content, "Content", class: "block text-sm font-medium text-purple-300 mb-2" %>
+        <%= f.text_area :content, 
+            rows: 10, 
+            class: "elphame-input w-full px-4 py-3 bg-gray-950 border border-gray-800 rounded-lg text-gray-200 focus:border-purple-700 focus:outline-none transition font-mono text-sm",
+            placeholder: "Reshape your words..." %>
+        <p class="mt-2 text-xs text-gray-600">Max 2000 characters.</p>
+      </div>
+
+      <div class="flex items-center gap-4">
+        <%= f.submit "Save Changes", class: "action-button px-8 py-3 bg-purple-900 hover:bg-purple-800 border border-purple-700 rounded-lg text-purple-200 font-bold cursor-pointer transition shadow-lg" %>
+        <%= link_to "Cancel", discussion_path(@discussion, anchor: "post-#{@post.id}"), class: "px-6 py-3 text-gray-400 hover:text-purple-300 transition" %>
+      </div>
+    <% end %>
+  </div>
+</div>

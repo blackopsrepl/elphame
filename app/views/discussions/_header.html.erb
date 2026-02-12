@@ -1,0 +1,68 @@
+<!-- Subject -->
+<% if discussion.subject.present? %>
+  <h1 class="text-3xl font-bold text-gray-200 glow-text mb-2"><%= discussion.subject %></h1>
+<% else %>
+  <h1 class="text-3xl font-bold text-gray-500 italic mb-2">Untitled</h1>
+<% end %>
+
+<!-- Metadata -->
+<div class="flex items-center gap-3 text-sm text-gray-600 mb-4">
+  <span>in /<%= discussion.realm.slug %>/</span>
+  <span>•</span>
+  <span><%= discussion.created_at.strftime("%Y-%m-%d %H:%M") %></span>
+  <span>•</span>
+  <span class="flex items-center gap-1">
+    ⭐ <span class="vote-score <%= discussion.total_stars > 0 ? 'text-yellow-400' : '' %>"><%= discussion.total_stars.round(1) %> stars</span>
+  </span>
+  <span>•</span>
+  <span>💬 <%= discussion.reply_count_cache %> <%= discussion.reply_count_cache == 1 ? 'reply' : 'replies' %></span>
+</div>
+
+<!-- Labels, Tags, and Actions -->
+<div class="flex items-center gap-2 flex-wrap mb-4">
+  <!-- Pinned badge -->
+  <% if discussion.pinned? %>
+    <span class="label-pill text-xs px-3 py-1 rounded bg-purple-900/70 border border-purple-700 text-purple-200">
+      📌 Pinned
+    </span>
+  <% end %>
+
+  <!-- Labels -->
+  <% discussion.labels.each do |label| %>
+    <span class="label-pill text-xs px-3 py-1 rounded bg-gray-900/80 border border-gray-700 text-gray-300">
+      <%= label.display_name %>
+    </span>
+  <% end %>
+
+  <!-- Manage Labels (admin only) -->
+  <% if current_user&.admin? %>
+    <button onclick="document.getElementById('label-picker').classList.toggle('hidden')"
+            class="action-button text-xs px-3 py-1 rounded bg-purple-900/30 hover:bg-purple-900/50 border border-purple-800/50 text-purple-300">
+      🏷️ Manage Labels
+    </button>
+  <% end %>
+
+  <!-- Owner actions -->
+  <% if user_signed_in? && (discussion.user == current_user || current_user.admin?) %>
+    <div class="flex items-center gap-2">
+      <%= link_to "✏️ Edit", edit_discussion_path(discussion),
+          class: "action-button text-xs px-3 py-1 rounded bg-blue-900/30 hover:bg-blue-900/50 border border-blue-800/50 text-blue-300" %>
+      <%= button_to "🗑️ Delete", discussion_path(discussion),
+          method: :delete,
+          data: { turbo_confirm: "Unmake this thread forever?" },
+          class: "danger-button text-xs px-3 py-1 rounded bg-red-900/30 hover:bg-red-900/50 border border-red-800/50 text-red-300" %>
+    </div>
+  <% end %>
+
+  <!-- Admin actions -->
+  <% if current_user&.admin? %>
+    <%= button_to "📌 #{discussion.pinned? ? 'Unpin' : 'Pin'}",
+        pin_discussion_path(discussion),
+        method: :post,
+        class: "action-button text-xs px-3 py-1 rounded bg-purple-900/30 hover:bg-purple-900/50 border border-purple-800/50 text-purple-300" %>
+    <%= button_to "🚀 Boost +10",
+        boost_discussion_path(discussion),
+        method: :post,
+        class: "action-button text-xs px-3 py-1 rounded bg-green-900/30 hover:bg-green-900/50 border border-green-800/50 text-green-300" %>
+  <% end %>
+</div>

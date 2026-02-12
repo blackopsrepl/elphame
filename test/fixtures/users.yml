@@ -1,0 +1,22 @@
+admin_user:
+  username: "adminuser"
+  email: "admin@elphame.test"
+  encrypted_password: <%= Devise::Encryptor.digest(User, "password123") %>
+  admin: true
+  created_at: <%= Time.current %>
+  updated_at: <%= Time.current %>
+
+regular_user:
+  username: "regularuser"
+  email: "user@elphame.test"
+  encrypted_password: <%= Devise::Encryptor.digest(User, "password123") %>
+  admin: false
+  created_at: <%= Time.current %>
+  updated_at: <%= Time.current %>
+
+bot_user:
+  username: "testbot"
+  bot_token: <%= SecureRandom.alphanumeric(12) %>
+  admin: false
+  created_at: <%= Time.current %>
+  updated_at: <%= Time.current %>

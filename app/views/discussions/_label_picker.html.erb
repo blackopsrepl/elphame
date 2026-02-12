@@ -1,0 +1,26 @@
+<div id="label-picker" class="hidden mt-4 p-4 rounded-lg border border-purple-900/50 bg-purple-950/20 backdrop-blur-sm">
+  <div class="text-sm font-semibold text-purple-300 mb-3">Apply Labels:</div>
+  <div class="space-y-3">
+    <% Label.active.order(:category, :position).group_by(&:category).each do |category, labels| %>
+      <div>
+        <div class="text-xs text-gray-500 uppercase tracking-wide mb-2"><%= category.titleize %></div>
+        <div class="flex flex-wrap gap-2">
+          <% labels.each do |label| %>
+            <% if discussion.labels.include?(label) %>
+              <% thread_label = discussion.thread_labels.find_by(label: label) %>
+              <%= button_to label.display_name,
+                  discussion_thread_label_path(discussion, thread_label, label_id: label.id),
+                  method: :delete,
+                  class: "label-pill text-xs px-3 py-1.5 rounded bg-purple-900/70 text-purple-200 border border-purple-700 hover:bg-purple-800/70" %>
+            <% else %>
+              <%= button_to label.display_name,
+                  discussion_thread_labels_path(discussion, label_id: label.id),
+                  method: :post,
+                  class: "label-pill text-xs px-3 py-1.5 rounded bg-gray-900/50 text-gray-400 border border-gray-800 hover:border-purple-900/50 hover:text-purple-300 hover:bg-gray-900" %>
+            <% end %>
+          <% end %>
+        </div>
+      </div>
+    <% end %>
+  </div>
+</div>

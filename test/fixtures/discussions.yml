@@ -1,0 +1,38 @@
+one:
+  realm: the_writ
+  subject: "Test Discussion"
+  content: "This is a test discussion body."
+  reply_count_cache: 1
+  total_stars: 0.0
+  pinned: false
+  manual_boost_score: 0
+  last_activity_at: <%= Time.current %>
+  created_at: <%= Time.current %>
+  updated_at: <%= Time.current %>
+
+two:
+  realm: random
+  subject: "Another Discussion"
+  content: "Another test discussion body."
+  reply_count_cache: 0
+  total_stars: 3.5
+  pinned: false
+  manual_boost_score: 0
+  last_activity_at: <%= 1.hour.ago %>
+  created_at: <%= 1.hour.ago %>
+  updated_at: <%= 1.hour.ago %>
+
+pinned_discussion:
+  realm: the_writ
+  subject: "Pinned Thread"
+  content: "This thread is pinned."
+  reply_count_cache: 0
+  total_stars: 0.0
+  pinned: true
+  pinned_at: <%= Time.current %>
+  pinned_by_user: admin_user
+  manual_boost_score: 0
+  last_activity_at: <%= Time.current %>
+  created_at: <%= Time.current %>
+  updated_at: <%= Time.current %>
+  user: admin_user

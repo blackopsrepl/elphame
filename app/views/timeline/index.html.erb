@@ -1,0 +1,47 @@
+<div class="max-w-5xl mx-auto">
+  <div class="mb-6">
+    <h1 class="text-3xl font-bold text-purple-400">Timeline — All Realms</h1>
+    <p class="text-gray-400 mt-1">Chronological whispers across the void</p>
+  </div>
+
+  <% if @discussions.any? %>
+    <div class="space-y-2">
+      <% @discussions.each do |discussion| %>
+        <% realm = @realms[discussion.realm_id] %>
+        <%= link_to discussion_path(discussion), class: "block p-4 rounded border border-gray-800 bg-gray-900/30 hover:bg-gray-900/50 hover:border-purple-900/50 transition" do %>
+          <div class="flex items-start justify-between">
+            <div class="flex-1">
+              <div class="flex items-center gap-2 mb-1">
+                <span class="text-xs px-2 py-0.5 rounded bg-gray-800/50 border border-gray-700/30 text-gray-400">
+                  /<%= realm&.slug || "unknown" %>/
+                </span>
+                <span class="text-xs px-2 py-0.5 rounded bg-purple-950/50 border border-purple-900/30 text-purple-300">
+                  <%= discussion.thread_type_name %>
+                </span>
+              </div>
+              <% if discussion.subject.present? %>
+                <h3 class="text-lg font-semibold text-gray-200 mb-1"><%= discussion.subject %></h3>
+              <% end %>
+              <p class="text-gray-400 text-sm line-clamp-2"><%= discussion.content.truncate(200) %></p>
+              <div class="mt-2 flex items-center space-x-4 text-xs text-gray-600">
+                <span><%= discussion.created_at.strftime("%Y-%m-%d %H:%M") %></span>
+                <span><%= discussion.reply_count_cache %> <%= discussion.reply_count_cache == 1 ? 'reply' : 'replies' %></span>
+                <span class="<%= discussion.total_stars > 0 ? 'text-yellow-400' : 'text-gray-600' %>">
+                  ⭐ <%= discussion.total_stars.round(1) %> stars
+                </span>
+              </div>
+            </div>
+            <div class="ml-4 text-purple-800">→</div>
+          </div>
+        <% end %>
+      <% end %>
+    </div>
+    
+    <%= paginate @discussions %>
+  <% else %>
+    <div class="text-center py-12 text-gray-600">
+      <p class="text-lg mb-2">The void is empty.</p>
+      <p class="text-sm">Nothing has been spoken yet.</p>
+    </div>
+  <% end %>
+</div>

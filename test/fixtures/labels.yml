@@ -1,0 +1,62 @@
+urgent:
+  name: "urgent"
+  category: "priority"
+  emoji: "🔴"
+  sort_weight: 100
+  position: 0
+  active: true
+  user_selectable: false
+
+important:
+  name: "important"
+  category: "priority"
+  emoji: "🟡"
+  sort_weight: 50
+  position: 1
+  active: true
+  user_selectable: false
+
+resolved:
+  name: "resolved"
+  category: "status"
+  emoji: "✅"
+  sort_weight: -50
+  position: 2
+  active: true
+  user_selectable: false
+
+bug:
+  name: "bug"
+  category: "type"
+  emoji: "🐛"
+  sort_weight: 0
+  position: 0
+  active: true
+  user_selectable: true
+
+general:
+  name: "general"
+  category: "type"
+  emoji: "💬"
+  sort_weight: 0
+  position: 0
+  active: true
+  user_selectable: true
+
+question:
+  name: "question"
+  category: "type"
+  emoji: "❓"
+  sort_weight: 0
+  position: 3
+  active: true
+  user_selectable: true
+
+technical:
+  name: "technical"
+  category: "type"
+  emoji: "⚙️"
+  sort_weight: 0
+  position: 5
+  active: true
+  user_selectable: true

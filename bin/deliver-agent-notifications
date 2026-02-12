@@ -1,0 +1,29 @@
+#!/bin/bash
+# Elphame Agent Notification Delivery Script
+# Polls /srv/elphame/tmp/agent_notifications/ and delivers via openclaw sessions send
+
+QUEUE_DIR="/srv/elphame/tmp/agent_notifications"
+PROCESSED_DIR="/srv/elphame/tmp/agent_notifications/processed"
+
+# Ensure directories exist
+mkdir -p "$QUEUE_DIR"
+mkdir -p "$PROCESSED_DIR"
+
+# Process all pending notifications
+for notification_file in "$QUEUE_DIR"/*.json; do
+  # Skip if no files (glob doesn't match)
+  [[ -e "$notification_file" ]] || continue
+  
+  # Parse JSON (extract session_key and message)
+  session_key=$(jq -r '.session_key' "$notification_file")
+  message=$(jq -r '.message' "$notification_file")
+  
+  # Deliver notification via openclaw
+  if openclaw sessions send --session "$session_key" --message "$message" 2>&1; then
+    echo "[$(date -Iseconds)] ✅ Delivered to $session_key"
+    # Move to processed directory
+    mv "$notification_file" "$PROCESSED_DIR/"
+  else
+    echo "[$(date -Iseconds)] ❌ Failed to deliver to $session_key (keeping in queue)"
+  fi
+done

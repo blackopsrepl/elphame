@@ -1,0 +1,98 @@
+<div id="star-rating-post-<%= post.id %>">
+  <div class="star-rating-widget flex items-center gap-3 text-sm">
+    <% if defined?(current_user) && current_user %>
+      <% user_rating = post.star_rating_for(current_user) %>
+      <div class="flex items-center gap-2">
+        <span class="text-gray-500 text-xs">Rate:</span>
+        <div class="flex items-center gap-0">
+          <% [1, 2, 3, 4, 5].each do |star| %>
+            <% half = star - 0.5 %>
+            <div class="star-pair inline-flex items-center">
+              <%# Half star button %>
+              <%= button_to post_star_rating_path(post, rating: half),
+                  method: :post,
+                  class: "star-btn inline-block px-0.5 text-lg leading-none cursor-pointer hover:scale-125 transition-transform #{user_rating && user_rating >= half ? 'text-yellow-400 glow-star' : 'text-gray-700 hover:text-purple-400'} bg-transparent border-0 p-0",
+                  title: "#{half} stars" do %>
+                <span class="sr-only"><%= half %></span>◗
+              <% end %>
+              <%# Full star button %>
+              <%= button_to post_star_rating_path(post, rating: star),
+                  method: :post,
+                  class: "star-btn inline-block px-0.5 text-lg leading-none cursor-pointer hover:scale-125 transition-transform #{user_rating && user_rating >= star ? 'text-yellow-400 glow-star' : 'text-gray-700 hover:text-purple-400'} bg-transparent border-0 p-0",
+                  title: "#{star} stars" do %>
+                <span class="sr-only"><%= star %></span>★
+              <% end %>
+            </div>
+          <% end %>
+        </div>
+        <% if user_rating %>
+          <%= button_to post_star_rating_path(post),
+              method: :delete,
+              class: "text-xs text-gray-600 hover:text-red-400 ml-2 cursor-pointer transition-colors bg-transparent border-0",
+              title: "Remove rating",
+              data: { 
+                turbo_confirm: "Remove your rating?"
+              } do %>
+            ✕
+          <% end %>
+        <% end %>
+      </div>
+      <% if user_rating %>
+        <span class="text-yellow-400 text-xs font-semibold">Your: <%= user_rating %> ★</span>
+      <% end %>
+    <% else %>
+      <%# Logged-out state: show grayed-out stars + login prompt %>
+      <div class="flex items-center gap-2 opacity-60">
+        <span class="text-gray-600 text-xs">Rate:</span>
+        <span class="text-gray-700 text-lg">◗★◗★◗★◗★◗★</span>
+        <%= link_to "Login to rate", new_user_session_path, 
+            class: "text-xs text-purple-400 hover:text-purple-300 ml-2 transition-colors" %>
+      </div>
+    <% end %>
+
+    <%# Always show counter (even if 0) %>
+    <span class="text-gray-400 text-xs">
+      <span class="text-yellow-500">★</span> <%= post.average_stars.round(1) %> avg
+      (<%= post.star_count_cache %> <%= post.star_count_cache == 1 ? 'rating' : 'ratings' %>)
+    </span>
+
+    <% if defined?(error) && error %>
+      <span class="text-red-400 text-xs"><%= error %></span>
+    <% end %>
+  </div>
+</div>
+
+<style>
+/* Star rating glow effect */
+.glow-star {
+  filter: drop-shadow(0 0 3px rgba(251, 191, 36, 0.6));
+}
+
+/* Smooth transitions */
+.star-btn {
+  display: inline-block;
+  transition: transform 0.15s ease, color 0.15s ease;
+}
+
+.star-btn:hover {
+  transform: scale(1.25);
+}
+
+/* Star pair keeps half+full together */
+.star-pair {
+  display: inline-flex;
+  align-items: center;
+  gap: 0;
+}
+
+/* Remove button default styles */
+button.star-btn,
+button.bg-transparent {
+  background: none;
+  border: none;
+  padding: 0;
+  margin: 0;
+  font: inherit;
+  cursor: pointer;
+}
+</style>

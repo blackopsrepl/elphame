@@ -1,0 +1,53 @@
+<div class="max-w-md mx-auto">
+  <div class="bg-gray-900 border border-purple-900/30 rounded-lg p-8">
+    <h2 class="text-3xl font-bold text-purple-300 mb-6">Join the Realm</h2>
+
+    <%= form_for(resource, as: resource_name, url: registration_path(resource_name), html: { class: "space-y-6", multipart: true }) do |f| %>
+      <%= render "devise/shared/error_messages", resource: resource %>
+
+      <div>
+        <%= f.label :username, class: "block text-sm font-medium text-gray-400 mb-2" %>
+        <%= f.text_field :username, autofocus: true,
+            class: "w-full px-4 py-3 bg-gray-950 border border-gray-800 rounded text-gray-200 focus:border-purple-800 focus:outline-none transition",
+            placeholder: "Choose your name" %>
+        <p class="mt-1 text-xs text-gray-500">3-20 characters, letters/numbers/underscores/hyphens only</p>
+      </div>
+
+      <div>
+        <%= f.label :email, class: "block text-sm font-medium text-gray-400 mb-2" %>
+        <%= f.email_field :email, autocomplete: "email",
+            class: "w-full px-4 py-3 bg-gray-950 border border-gray-800 rounded text-gray-200 focus:border-purple-800 focus:outline-none transition" %>
+      </div>
+
+      <div>
+        <%= f.label :password, class: "block text-sm font-medium text-gray-400 mb-2" %>
+        <%= f.password_field :password, autocomplete: "new-password",
+            class: "w-full px-4 py-3 bg-gray-950 border border-gray-800 rounded text-gray-200 focus:border-purple-800 focus:outline-none transition" %>
+        <% if @minimum_password_length %>
+          <p class="mt-1 text-xs text-gray-500"><%= @minimum_password_length %> characters minimum</p>
+        <% end %>
+      </div>
+
+      <div>
+        <%= f.label :password_confirmation, class: "block text-sm font-medium text-gray-400 mb-2" %>
+        <%= f.password_field :password_confirmation, autocomplete: "new-password",
+            class: "w-full px-4 py-3 bg-gray-950 border border-gray-800 rounded text-gray-200 focus:border-purple-800 focus:outline-none transition" %>
+      </div>
+
+      <div>
+        <%= f.label :avatar, "Avatar (optional)", class: "block text-sm font-medium text-gray-400 mb-2" %>
+        <%= f.file_field :avatar, accept: "image/*", 
+            class: "w-full px-4 py-3 bg-gray-950 border border-gray-800 rounded text-gray-200 focus:border-purple-800 focus:outline-none transition file:mr-4 file:py-2 file:px-4 file:rounded file:border-0 file:text-sm file:font-semibold file:bg-purple-900 file:text-purple-200 hover:file:bg-purple-800 file:cursor-pointer" %>
+        <p class="mt-1 text-xs text-gray-500">Show your face in the void</p>
+      </div>
+
+      <div>
+        <%= f.submit "Create Account", class: "w-full px-6 py-3 bg-purple-900 hover:bg-purple-800 border border-purple-800 rounded text-purple-200 font-semibold cursor-pointer transition" %>
+      </div>
+    <% end %>
+
+    <div class="mt-6 text-center text-sm">
+      <%= link_to "Already have an account? Sign in", new_session_path(resource_name), class: "text-purple-400 hover:text-purple-300" %>
+    </div>
+  </div>
+</div>

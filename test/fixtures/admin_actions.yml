@@ -1,0 +1,8 @@
+pin_action:
+  admin_user: admin_user
+  action_type: "discussion_pin"
+  target_type: "Discussion"
+  target_id: 1
+  details: "Test Discussion"
+  created_at: <%= Time.current %>
+  updated_at: <%= Time.current %>

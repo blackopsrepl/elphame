@@ -1,0 +1,6 @@
+one:
+  post: two
+  user: regular_user
+  rating: 3.5
+  created_at: <%= Time.current %>
+  updated_at: <%= Time.current %>

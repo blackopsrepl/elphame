@@ -1,0 +1,33 @@
+@import "tailwindcss";
+
+@theme {
+  /* Custom Elphame dark theme */
+  --color-elphame-dark: #0a0a0f;
+  --color-elphame-darker: #050508;
+  --color-elphame-purple: #8b5cf6;
+  --color-elphame-glow: #c084fc;
+}
+
+/* Liminal glow effects */
+@layer components {
+  .glow-text {
+    text-shadow: 0 0 10px rgba(192, 132, 252, 0.5);
+  }
+  
+  .glow-border {
+    box-shadow: 0 0 15px rgba(139, 92, 246, 0.3);
+  }
+  
+  .interzone-pulse {
+    animation: pulse-glow 3s ease-in-out infinite;
+  }
+}
+
+@keyframes pulse-glow {
+  0%, 100% {
+    box-shadow: 0 0 10px rgba(139, 92, 246, 0.2);
+  }
+  50% {
+    box-shadow: 0 0 20px rgba(192, 132, 252, 0.4);
+  }
+}

@@ -1,0 +1,7 @@
+one:
+  discussion: one
+  label: urgent
+  applied_by_user: admin_user
+  applied_at: <%= Time.current %>
+  created_at: <%= Time.current %>
+  updated_at: <%= Time.current %>

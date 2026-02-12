@@ -1,0 +1,104 @@
+<div>
+  <div class="flex items-center justify-between mb-8">
+    <h1 class="text-4xl font-bold text-purple-300">Dashboard</h1>
+    <%= link_to root_path, target: "_blank", class: "px-4 py-2 rounded bg-purple-900/30 text-purple-300 border border-purple-800/50 hover:bg-purple-800/50 transition text-sm font-semibold" do %>
+      🌙 View Imageboard
+    <% end %>
+  </div>
+
+  <!-- Stats Grid -->
+  <div class="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-4 mb-12">
+    <div class="bg-gray-900 border border-purple-800/30 rounded-lg p-5">
+      <div class="text-gray-400 text-xs mb-1">Users</div>
+      <div class="text-2xl font-bold text-purple-300"><%= @user_count %></div>
+    </div>
+    <div class="bg-gray-900 border border-purple-800/30 rounded-lg p-5">
+      <div class="text-gray-400 text-xs mb-1">Realms</div>
+      <div class="text-2xl font-bold text-purple-300"><%= @realm_count %></div>
+    </div>
+    <div class="bg-gray-900 border border-purple-800/30 rounded-lg p-5">
+      <div class="text-gray-400 text-xs mb-1">Discussions</div>
+      <div class="text-2xl font-bold text-purple-300"><%= @discussion_count %></div>
+    </div>
+    <div class="bg-gray-900 border border-purple-800/30 rounded-lg p-5">
+      <div class="text-gray-400 text-xs mb-1">Posts</div>
+      <div class="text-2xl font-bold text-purple-300"><%= @post_count %></div>
+    </div>
+    <div class="bg-gray-900 border border-purple-800/30 rounded-lg p-5">
+      <div class="text-gray-400 text-xs mb-1">Labels</div>
+      <div class="text-2xl font-bold text-purple-300"><%= @label_count %></div>
+    </div>
+    <div class="bg-gray-900 border border-purple-800/30 rounded-lg p-5">
+      <div class="text-gray-400 text-xs mb-1">Ratings</div>
+      <div class="text-2xl font-bold text-purple-300"><%= @star_rating_count %></div>
+    </div>
+  </div>
+
+  <div class="grid grid-cols-1 lg:grid-cols-2 gap-8">
+    <!-- Recent Users -->
+    <div class="bg-gray-900 border border-purple-800/30 rounded-lg p-6">
+      <h2 class="text-xl font-bold text-purple-300 mb-4">Recent Users</h2>
+      <div class="space-y-3">
+        <% @recent_users.each do |user| %>
+          <div class="flex items-center justify-between border-b border-gray-800 pb-2">
+            <div>
+              <div class="text-purple-200 font-medium">
+                <%= link_to user.username, admin_user_path(user), class: "hover:text-purple-300" %>
+              </div>
+              <div class="text-sm text-gray-400"><%= user.email %></div>
+            </div>
+            <div class="text-xs text-gray-500">
+              <%= time_ago_in_words(user.created_at) %> ago
+            </div>
+          </div>
+        <% end %>
+      </div>
+      <%= link_to "View All Users", admin_users_path, class: "block mt-4 text-purple-400 hover:text-purple-300 text-sm" %>
+    </div>
+
+    <!-- Recent Discussions -->
+    <div class="bg-gray-900 border border-purple-800/30 rounded-lg p-6">
+      <h2 class="text-xl font-bold text-purple-300 mb-4">Recent Discussions</h2>
+      <div class="space-y-3">
+        <% @recent_discussions.each do |discussion| %>
+          <div class="border-b border-gray-800 pb-2">
+            <div class="text-purple-200 font-medium">
+              <%= link_to (discussion.subject.presence || "(untitled)"), admin_discussion_path(discussion), class: "hover:text-purple-300" %>
+            </div>
+            <div class="text-sm text-gray-400">
+              <%= discussion.realm.name %> |
+              <%= discussion.reply_count_cache %> replies |
+              <span class="<%= discussion.total_stars > 0 ? 'text-yellow-400' : 'text-gray-500' %>">
+                <%= discussion.total_stars.round(1) %> stars
+              </span>
+            </div>
+          </div>
+        <% end %>
+      </div>
+      <%= link_to "View All Discussions", admin_discussions_path, class: "block mt-4 text-purple-400 hover:text-purple-300 text-sm" %>
+    </div>
+  </div>
+
+  <!-- Recent Audit Log -->
+  <div class="mt-8 bg-gray-900 border border-purple-800/30 rounded-lg p-6">
+    <h2 class="text-xl font-bold text-purple-300 mb-4">Recent Admin Actions</h2>
+    <% if @recent_actions.any? %>
+      <div class="space-y-2">
+        <% @recent_actions.each do |action| %>
+          <div class="flex items-center justify-between border-b border-gray-800 pb-2 text-sm">
+            <div>
+              <span class="text-purple-300 font-medium"><%= action.admin_user&.username %></span>
+              <span class="text-gray-400"><%= action.description %></span>
+            </div>
+            <div class="text-xs text-gray-500">
+              <%= time_ago_in_words(action.created_at) %> ago
+            </div>
+          </div>
+        <% end %>
+      </div>
+      <%= link_to "View Full Audit Log", admin_admin_actions_path, class: "block mt-4 text-purple-400 hover:text-purple-300 text-sm" %>
+    <% else %>
+      <p class="text-gray-500 text-sm">No admin actions recorded yet.</p>
+    <% end %>
+  </div>
+</div>

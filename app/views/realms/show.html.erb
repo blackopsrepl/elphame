@@ -1,0 +1,148 @@
+<div class="max-w-5xl mx-auto fade-in-up">
+  <div class="mb-8">
+    <div class="flex items-center justify-between mb-6">
+      <div>
+        <div class="text-sm text-gray-600 mb-2">
+          <%= link_to "← All Realms", root_path, class: "hover:text-purple-400 transition" %>
+        </div>
+        <h1 class="text-4xl font-bold text-purple-400 glow-text">
+          <% if @realm.icon.present? %><span class="mr-1"><%= @realm.icon %></span><% end %>/<%= @realm.slug %>/
+        </h1>
+        <p class="text-gray-400 mt-2 text-lg"><%= @realm.description %></p>
+        <% if @realm.rules.present? %>
+          <details class="mt-3">
+            <summary class="text-sm text-purple-500 cursor-pointer hover:text-purple-400">View Realm Rules</summary>
+            <div class="mt-2 p-3 rounded bg-gray-900/50 border border-gray-800 text-sm text-gray-400">
+              <%= simple_format(@realm.rules) %>
+            </div>
+          </details>
+        <% end %>
+      </div>
+      
+      <%= link_to new_realm_discussion_path(@realm.slug), class: "action-button px-6 py-3 bg-purple-900/50 hover:bg-purple-800/60 border border-purple-800/50 rounded-lg text-purple-300 hover:text-purple-200 transition font-bold shadow-lg" do %>
+        <span class="flex items-center gap-2">
+          <span class="text-xl">✨</span>
+          <span>Start New Thread</span>
+        </span>
+      <% end %>
+    </div>
+    
+    <!-- Sort & Filter Controls -->
+    <div class="p-4 rounded-lg border border-purple-900/30 bg-gray-900/30 backdrop-blur-sm mb-4">
+      <div class="flex items-center gap-4 text-sm flex-wrap">
+        <div class="flex items-center gap-2">
+          <span class="text-purple-400 font-semibold">Sort:</span>
+          <% filter_params = params[:label].present? ? { label: params[:label] } : {} %>
+          <%= link_to "🎯 Smart", realm_path(@realm.slug, **filter_params), 
+              class: "action-button px-3 py-1.5 rounded #{params[:sort].nil? ? 'bg-purple-900/70 text-purple-200 border border-purple-700' : 'text-gray-400 hover:text-purple-300 border border-gray-800'}" %>
+          <%= link_to "🕐 Recent", realm_path(@realm.slug, sort: 'activity', **filter_params), 
+              class: "action-button px-3 py-1.5 rounded #{params[:sort] == 'activity' ? 'bg-purple-900/70 text-purple-200 border border-purple-700' : 'text-gray-400 hover:text-purple-300 border border-gray-800'}" %>
+          <%= link_to "✨ Newest", realm_path(@realm.slug, sort: 'newest', **filter_params), 
+              class: "action-button px-3 py-1.5 rounded #{params[:sort] == 'newest' ? 'bg-purple-900/70 text-purple-200 border border-purple-700' : 'text-gray-400 hover:text-purple-300 border border-gray-800'}" %>
+          <%= link_to "💬 Most Replies", realm_path(@realm.slug, sort: 'replies', **filter_params), 
+              class: "action-button px-3 py-1.5 rounded #{params[:sort] == 'replies' ? 'bg-purple-900/70 text-purple-200 border border-purple-700' : 'text-gray-400 hover:text-purple-300 border border-gray-800'}" %>
+          <%= link_to "⭐ Most Stars", realm_path(@realm.slug, sort: 'stars', **filter_params), 
+              class: "action-button px-3 py-1.5 rounded #{params[:sort] == 'stars' ? 'bg-purple-900/70 text-purple-200 border border-purple-700' : 'text-gray-400 hover:text-purple-300 border border-gray-800'}" %>
+        </div>
+        
+        <% if params[:label].present? %>
+          <div class="flex items-center gap-2 ml-auto">
+            <span class="text-purple-400 font-semibold">Filter:</span>
+            <span class="label-pill px-3 py-1.5 rounded bg-purple-900/70 text-purple-200 border border-purple-700">
+              <%= @labels.find { |l| l.name == params[:label] }&.display_name %>
+            </span>
+            <%= link_to "✕ Clear", realm_path(@realm.slug), class: "action-button px-3 py-1.5 rounded bg-gray-900/50 text-gray-400 hover:text-purple-300 border border-gray-800" %>
+          </div>
+        <% end %>
+      </div>
+      
+      <!-- Label Filter Pills -->
+      <div class="flex flex-wrap gap-2 mt-3 pt-3 border-t border-gray-800">
+        <% @labels.group_by(&:category).each do |category, labels| %>
+          <div class="flex items-center gap-2">
+            <span class="text-xs text-purple-400 uppercase tracking-wide font-semibold"><%= category.titleize %>:</span>
+            <% labels.each do |label| %>
+              <% sort_params = params[:sort].present? ? { sort: params[:sort] } : {} %>
+              <%= link_to label.display_name, 
+                  realm_path(@realm.slug, label: label.name, **sort_params),
+                  class: "label-pill text-xs px-3 py-1 rounded #{params[:label] == label.name ? 'bg-purple-900/70 text-purple-200 border border-purple-700' : 'bg-gray-900/50 text-gray-400 border border-gray-800 hover:border-purple-900/50 hover:text-purple-300'}" %>
+            <% end %>
+          </div>
+        <% end %>
+      </div>
+    </div>
+  </div>
+
+  <% if @discussions.any? %>
+    <div class="space-y-3">
+      <% @discussions.each do |discussion| %>
+        <%= link_to discussion_path(discussion), class: "thread-card block p-5 rounded-lg border border-gray-800 bg-gray-900/40 hover:bg-gray-900/60 transition #{discussion.pinned? ? 'pinned border-l-4 border-l-purple-500' : ''}" do %>
+          <div class="flex items-start justify-between gap-4">
+            <div class="flex-1 min-w-0">
+              <div class="flex items-center gap-2 mb-2 flex-wrap">
+                <% if discussion.pinned? %>
+                  <span class="label-pill text-xs px-3 py-1 rounded bg-purple-900/70 border border-purple-700 text-purple-200 font-semibold">
+                    📌 Pinned
+                  </span>
+                <% end %>
+                <% discussion.labels.each do |label| %>
+                  <span class="label-pill text-xs px-2 py-1 rounded <%= label.category == 'type' ? 'bg-purple-950/50 border-purple-900/30 text-purple-300' : 'bg-gray-900/80 border-gray-700 text-gray-300' %> border">
+                    <%= label.display_name %>
+                  </span>
+                <% end %>
+              </div>
+              <% if discussion.subject.present? %>
+                <h3 class="text-xl font-bold text-gray-200 mb-2 hover:text-purple-300 transition"><%= discussion.subject %></h3>
+              <% else %>
+                <h3 class="text-xl font-bold text-gray-500 italic mb-2">Untitled</h3>
+              <% end %>
+              <p class="text-gray-400 text-sm line-clamp-2 leading-relaxed"><%= discussion.content.truncate(220) %></p>
+              <div class="mt-3 flex items-center gap-4 text-xs text-gray-600">
+                <span class="flex items-center gap-1">
+                  <span>🕐</span>
+                  <span><%= discussion.created_at.strftime("%Y-%m-%d %H:%M") %></span>
+                </span>
+                <span class="flex items-center gap-1">
+                  <span>💬</span>
+                  <span class="<%= discussion.reply_count_cache > 0 ? 'text-purple-400 font-semibold' : '' %>">
+                    <%= discussion.reply_count_cache %>
+                  </span>
+                </span>
+                <span class="flex items-center gap-1">
+                  <span>⭐</span>
+                  <span class="<%= discussion.total_stars > 0 ? 'text-yellow-400 font-semibold' : '' %>">
+                    <%= discussion.total_stars.round(1) %>
+                  </span>
+                </span>
+                <% if discussion.last_activity_at && discussion.last_activity_at != discussion.created_at %>
+                  <span class="text-gray-700 ml-auto">
+                    Last: <%= time_ago_in_words(discussion.last_activity_at) %> ago
+                  </span>
+                <% end %>
+              </div>
+            </div>
+            <div class="flex-shrink-0 text-purple-700 text-2xl self-center">→</div>
+          </div>
+        <% end %>
+      <% end %>
+    </div>
+    
+  <% else %>
+    <div class="empty-state text-center py-16">
+      <div class="text-6xl mb-4">🌙</div>
+      <p class="text-xl text-gray-500 mb-2">The void is empty.</p>
+      <p class="text-sm text-gray-600 mb-6">Be the first to speak into the darkness.</p>
+      <%= link_to new_realm_discussion_path(@realm.slug), class: "action-button inline-flex items-center gap-2 px-6 py-3 bg-purple-900/50 hover:bg-purple-800/60 border border-purple-800/50 rounded-lg text-purple-300 font-semibold transition shadow-lg" do %>
+        <span>✨</span>
+        <span>Start the First Thread</span>
+      <% end %>
+    </div>
+  <% end %>
+  
+  <!-- Pagination -->
+  <% if @discussions.total_pages > 1 %>
+    <div class="mt-8">
+      <%= paginate @discussions %>
+    </div>
+  <% end %>
+</div>

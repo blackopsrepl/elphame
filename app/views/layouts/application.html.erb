@@ -1,0 +1,74 @@
+<!DOCTYPE html>
+<html class="dark">
+  <head>
+    <title>Elphame — The Place That Is Not</title>
+    <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🌙</text></svg>">
+    <meta name="viewport" content="width=device-width,initial-scale=1">
+    <meta name="turbo-cache-control" content="no-preview">
+    <%= csrf_meta_tags %>
+    <%= csp_meta_tag %>
+
+    <%= yield :head %>
+
+    <%= stylesheet_link_tag "tailwind", "data-turbo-track": "reload" %>
+    <%= stylesheet_link_tag "application", "data-turbo-track": "reload" %>
+    <%= javascript_importmap_tags %>
+  </head>
+
+  <body class="bg-gray-950 text-gray-200 min-h-screen">
+    <header class="border-b border-purple-900/30 bg-gray-900/50 backdrop-blur glow-border">
+      <div class="container mx-auto px-4 py-4">
+        <div class="flex items-center justify-between">
+          <h1 class="text-2xl font-bold">
+            <%= link_to root_path, class: "flex items-center space-x-2 text-purple-400 hover:text-purple-300 transition glow-text" do %>
+              <span class="text-3xl">🌙</span>
+              <span>Elphame</span>
+            <% end %>
+          </h1>
+          <div class="flex items-center space-x-4">
+            <%= link_to "📜 Timeline", timeline_path, class: "text-sm text-purple-400 hover:text-purple-300 transition font-medium" %>
+            <% if user_signed_in? %>
+              <div class="flex items-center space-x-3">
+                <%= link_to edit_user_registration_path, class: "flex items-center space-x-2 hover:opacity-80 transition" do %>
+                  <% if current_user.avatar.attached? %>
+                    <%= image_tag current_user.avatar_thumbnail, class: "w-8 h-8 rounded-full object-cover" %>
+                  <% else %>
+                    <div class="w-8 h-8 rounded-full bg-purple-900 flex items-center justify-center text-purple-300 text-xs font-semibold">
+                      <%= current_user.username[0].upcase %>
+                    </div>
+                  <% end %>
+                  <span class="text-purple-300 text-sm"><%= current_user.username %></span>
+                <% end %>
+                <% if current_user.admin? %>
+                  <%= link_to "Admin", admin_root_path, class: "px-2 py-1 text-xs rounded bg-red-900/50 text-red-300 hover:bg-red-800/50 transition" %>
+                <% end %>
+                <%= button_to "Logout", destroy_user_session_path, method: :delete, class: "text-sm text-gray-400 hover:text-purple-300 transition" %>
+              </div>
+            <% else %>
+              <%= link_to "Login", new_user_session_path, class: "text-sm text-purple-400 hover:text-purple-300 transition" %>
+              <%= link_to "Register", new_user_registration_path, class: "px-3 py-1 text-sm rounded bg-purple-900 hover:bg-purple-800 text-purple-200 transition" %>
+            <% end %>
+            <span class="px-2 py-1 text-xs rounded border border-purple-700/50 bg-purple-950/40 text-purple-400 interzone-pulse">
+              FROM INTERZONE
+            </span>
+            <p class="text-sm text-gray-500 italic">the-place-that-is-not</p>
+          </div>
+        </div>
+      </div>
+    </header>
+
+    <main class="container mx-auto px-4 py-8">
+      <div id="flash-messages">
+        <%= render "shared/flash", notice: flash[:notice], alert: flash[:alert] %>
+      </div>
+
+      <%= yield %>
+    </main>
+
+    <footer class="border-t border-purple-900/30 bg-gray-900/50 backdrop-blur mt-12">
+      <div class="container mx-auto px-4 py-6 text-center text-sm text-gray-600">
+        <p>All traces fade. Nothing persists but shadow.</p>
+      </div>
+    </footer>
+  </body>
+</html>

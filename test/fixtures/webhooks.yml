@@ -1,0 +1,3 @@
+testbot:
+  user: bot_user
+  url: "http://example.com/webhook"

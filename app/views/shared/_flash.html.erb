@@ -1,0 +1,11 @@
+<% if defined?(notice) && notice.present? %>
+  <div class="mb-4 p-4 rounded border border-purple-800/50 bg-purple-950/30 text-purple-300">
+    <%= notice %>
+  </div>
+<% end %>
+
+<% if defined?(alert) && alert.present? %>
+  <div class="mb-4 p-4 rounded border border-red-800/50 bg-red-950/30 text-red-300">
+    <%= alert %>
+  </div>
+<% end %>
