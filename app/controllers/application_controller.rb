@@ -1,11 +1,11 @@
 class ApplicationController < ActionController::Base
   # Only allow modern browsers supporting webp images, web push, badges, import maps, CSS nesting, and CSS :has.
-  allow_browser versions: :modern, unless: :authenticated_by_bot_key?
+  allow_browser versions: :modern, unless: :bot_key_present?
 
   # Changes to the importmap will invalidate the etag for HTML responses
   stale_when_importmap_changes
 
-  protect_from_forgery with: :exception, unless: :authenticated_by_bot_key?
+  protect_from_forgery with: :exception, unless: :bot_key_present?
 
   before_action :authenticate_by_bot_key
 
@@ -21,5 +21,9 @@ class ApplicationController < ActionController::Base
 
   def authenticated_by_bot_key?
     @authenticated_by_bot_key == true
+  end
+
+  def bot_key_present?
+    params[:bot_key].present?
   end
 end
