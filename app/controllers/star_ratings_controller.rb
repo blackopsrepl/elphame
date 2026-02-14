@@ -16,11 +16,16 @@ class StarRatingsController < ApplicationController
       render_star_update
     else
       @post.reload
-      render turbo_stream: turbo_stream.replace(
-        "star-rating-post-#{@post.id}",
-        partial: "star_ratings/star_rating",
-        locals: { post: @post, error: @rating.errors.full_messages.join(", ") }
-      ), content_type: "text/vnd.turbo-stream.html"
+      respond_to do |format|
+        format.turbo_stream do
+          render turbo_stream: turbo_stream.replace(
+            "star-rating-post-#{@post.id}",
+            partial: "star_ratings/star_rating",
+            locals: { post: @post, error: @rating.errors.full_messages.join(", ") }
+          )
+        end
+        format.html { redirect_to @post.discussion }
+      end
     end
   end
 
@@ -39,10 +44,15 @@ class StarRatingsController < ApplicationController
 
   def render_star_update
     @post.reload
-    render turbo_stream: turbo_stream.replace(
-      "star-rating-post-#{@post.id}",
-      partial: "star_ratings/star_rating",
-      locals: { post: @post }
-    ), content_type: "text/vnd.turbo-stream.html"
+    respond_to do |format|
+      format.turbo_stream do
+        render turbo_stream: turbo_stream.replace(
+          "star-rating-post-#{@post.id}",
+          partial: "star_ratings/star_rating",
+          locals: { post: @post }
+        )
+      end
+      format.html { redirect_to @post.discussion }
+    end
   end
 end

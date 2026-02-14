@@ -6,11 +6,15 @@
       <%= render "devise/shared/error_messages", resource: resource %>
 
       <!-- Current Avatar Display -->
-      <% if resource.avatar.attached? %>
+      <% 
+        # Reload from database to get the previously saved avatar, not the new upload
+        saved_user = resource.persisted? ? User.find(resource.id) : resource
+        if saved_user.avatar.attached?
+      %>
         <div class="mb-6">
           <label class="block text-sm font-medium text-gray-400 mb-2">Current Avatar</label>
           <div class="flex items-center space-x-4">
-            <%= image_tag resource.avatar_thumbnail, class: "w-20 h-20 rounded-full object-cover" %>
+            <%= image_tag saved_user.avatar_thumbnail, class: "w-20 h-20 rounded-full object-cover" %>
             <div class="text-sm text-gray-500">Upload a new image to replace</div>
           </div>
         </div>

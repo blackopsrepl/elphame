@@ -1,7 +1,7 @@
 module Users
   class RegistrationsController < Devise::RegistrationsController
     skip_before_action :authenticate_scope!, if: :bot_key_present?
-    
+
     before_action :configure_sign_up_params, only: [ :create ]
     before_action :configure_account_update_params, only: [ :update ]
     before_action :ensure_authenticated_for_update, only: [ :update ]
@@ -70,18 +70,31 @@ module Users
 
     # Override update to handle username changes with proper validation
     def update_resource(resource, params)
-      # If password is blank, update without requiring password validation
-      if params[:password].blank?
-        params.delete(:password)
-        params.delete(:password_confirmation)
-        # current_password is only used for update_with_password, must be removed here
-        params.delete(:current_password)
+      # Check if user is trying to change password
+      password_change = params[:password].present? || params[:password_confirmation].present?
 
-        # Update without password
-        resource.update_without_password(params)
-      else
+      if password_change
         # Update with password (requires current_password for validation)
         resource.update_with_password(params)
+      elsif params[:current_password].present?
+        # Not changing password but current_password provided - verify it and update other fields
+        current_password = params.delete(:current_password)
+        params.delete(:password)
+        params.delete(:password_confirmation)
+
+        # Verify current password
+        if resource.valid_password?(current_password)
+          resource.update_without_password(params)
+        else
+          resource.errors.add(:current_password, :invalid)
+          false
+        end
+      else
+        # No password change and no current_password - update without password
+        params.delete(:password)
+        params.delete(:password_confirmation)
+        params.delete(:current_password)
+        resource.update_without_password(params)
       end
     end
   end

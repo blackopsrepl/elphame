@@ -32,7 +32,8 @@ class User < ApplicationRecord
   end
 
   def password_required?
-    !bot?
+    return false if bot?
+    !persisted? || password.present? || password_confirmation.present?
   end
 
   # Check if a soft username conflicts with registered usernames
