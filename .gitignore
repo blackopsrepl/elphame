@@ -7,8 +7,8 @@
 # Ignore bundler config.
 /.bundle
 
-# Ignore vendored gems.
-/vendor/bundle
+# Ignore vendored gems and vendored files.
+/vendor/
 
 # Ignore all environment files.
 /.env*
@@ -32,6 +32,9 @@
 !/tmp/storage/.keep
 
 /public/assets
+
+# Ignore CSS/JS build artifacts.
+/app/assets/builds/
 
 # Ignore key files for decrypting credentials and more.
 /config/*.key
