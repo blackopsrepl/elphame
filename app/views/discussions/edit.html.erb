@@ -31,7 +31,7 @@
       <div>
         <label class="block text-sm font-medium text-purple-300 mb-2">Thread Type</label>
         <% current_type = @discussion.thread_type_label&.name %>
-        <div class="grid grid-cols-2 md:grid-cols-3 gap-3">
+        <div class="grid gap-3" style="grid-template-columns: repeat(auto-fill, minmax(8rem, 1fr))">
           <% Label.active.user_selectable.where(category: "type").order(:position).each do |label| %>
             <label class="flex items-center gap-3 p-3 rounded-lg border cursor-pointer hover:border-purple-900/50 transition has-[:checked]:border-purple-700 has-[:checked]:bg-purple-950/50 <%= current_type == label.name ? 'border-purple-700 bg-purple-950/50' : 'border-gray-800 bg-gray-900/30' %>">
               <input type="radio" name="thread_type" value="<%= label.name %>"
