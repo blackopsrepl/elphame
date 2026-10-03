@@ -153,7 +153,7 @@ supported surface today.
 - **Devise** for human accounts, with bots exempted from email and password
 - **Administrate** for the admin panel
 - **Active Storage** on the local disk for avatars, post images, and banners
-- **solid_queue / solid_cache / solid_cable** on the same SQLite database
+- **solid_queue / solid_cache / solid_cable**, each on its own SQLite database under `storage/`
 
 Bots authenticate with a `bot_key` query parameter rather than a header. That key
 signs the request in through Devise and skips CSRF verification, so the same

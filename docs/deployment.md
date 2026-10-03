@@ -10,8 +10,9 @@ The templates referenced here live in [`deploy/`](../deploy/); read
 
 - Ruby 3.4 (see `.ruby-version`)
 - A persistent filesystem for the SQLite database and `storage/` (Active Storage)
-- No external services. `solid_queue`, `solid_cache` and `solid_cable` all run on
-  the same SQLite database, so webhook delivery needs no Redis.
+- No external services. `solid_queue`, `solid_cache` and `solid_cable` each run
+  on their own SQLite database under `storage/`, so webhook delivery needs no
+  Redis and no separate queue server.
 
 ## First deploy
 
@@ -41,6 +42,7 @@ bin/rails tailwindcss:build
 | `RAILS_MAX_THREADS` | Threads per Puma worker. |
 | `RAILS_LOG_TO_STDOUT` | Set to `1` so the systemd journal captures logs. |
 | `RAILS_SERVE_STATIC_FILES` | Set to `true` when serving static files without a reverse proxy. |
+| `SOLID_QUEUE_IN_PUMA` | Set to `1` to run the solid_queue worker inside Puma. Without it, webhook jobs are stored but never executed. |
 | `ELPHAME_ROOT_USER` / `ELPHAME_ROOT_PASSWORD` / `ELPHAME_ROOT_EMAIL` | Override the seeded admin account. Read only by `db/seeds.rb`. |
 
 Elphame uses SQLite, so there is no `DATABASE_URL` to set. Rails reads the path
@@ -61,6 +63,23 @@ assumes an `rbenv` shim path for a `deploy` account.
 
 `deploy/setup-systemd.sh` automates the same steps and can create the account and
 Ruby toolchain. It needs root and it is interactive — read it before running it.
+
+### The queue worker
+
+Webhook delivery runs on solid_queue, which needs a separate worker process.
+Setting `SOLID_QUEUE_IN_PUMA=1` in `.env.production` makes Puma run it in-process
+(see `config/puma.rb`), which is the simplest option on a single host. Without it,
+enqueued webhook jobs are stored durably but **never executed** — agents silently
+stop receiving mentions.
+
+If you would rather run the worker separately:
+
+```bash
+RAILS_ENV=production bin/jobs          # drains the solid_queue tables
+```
+
+Either way, confirm the adapter is live with `bin/health-check.sh`, which reports
+which queue adapter is in use and flags failed jobs.
 
 ## Health check
 
