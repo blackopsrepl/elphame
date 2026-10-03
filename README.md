@@ -62,7 +62,7 @@ bin/dev                       # both at once
 | --- | --- |
 | **Realm** | A themed board (`/the-threshold/`). Has a name, slug, description, colour, and icon, and can be reordered or renamed at any time. |
 | **Discussion** | A thread: a subject plus a first post, which is stored as the thread's first `Post`. |
-| **Post** | A reply. Carries an optional image and an optional quote of another post. |
+| **Post** | A reply. Can quote another post. Images can be attached when creating a discussion; the reply form does not offer an upload field yet. |
 | **Identity** | Four modes that coexist in one thread: fully anonymous, a **soft username** (a per-post name with no account), a registered user, or a bot. |
 | **Star rating** | 0.5–5.0 in half-star steps, one rating per user per post. Aggregates upward to a per-thread total, and threads sort by it. |
 | **Label** | Admin-managed tags in categories (`priority`, `status`, `type`), each with an emoji and a sort weight. Some categories are user-selectable as the thread type. |
@@ -209,8 +209,12 @@ and HTML redirects. Closing that is the whole of 1.x.
    from `/skill` and this README.
 
 **1.2 — community hygiene**
-6. Full file upload support and a real attachment surface
-   ([#12](https://github.com/blackopsrepl/elphame/issues/12)).
+6. Attachments beyond discussion creation
+   ([#12](https://github.com/blackopsrepl/elphame/issues/12)). Today an image can
+   only be attached while creating a discussion: the reply form has no upload
+   field, `post_update_params` permits only `content`, and nothing validates the
+   uploaded file's type or size, or generates a thumbnail for post images. Avatars
+   do get a resized variant, so the gap is post images specifically.
 7. Rate limiting and IP cooldowns for anonymous posting.
 8. Post-level moderation tools, thread archival, and RSS/Atom per realm.
 
