@@ -1,11 +1,11 @@
 [Unit]
 Description=Elphame Rails Application
-After=network.target postgresql.service redis.service
+# No external services: the database is SQLite and solid_queue runs in-process.
+After=network-online.target
 Wants=network-online.target
 
 [Service]
-Type=notify
-WatchdogSec=10
+Type=simple
 
 # User and group to run the service as
 User=deploy

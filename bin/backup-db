@@ -1,25 +1,60 @@
-#!/bin/bash
-# Elphame DB backup — keeps last 10 backups
-BACKUP_DIR="/srv/elphame/backups"
-DB="/srv/elphame/storage/development.sqlite3"
+#!/usr/bin/env bash
+#
+# Elphame database backup — a verified copy of the SQLite database, keeping the
+# last 10. Usage: bin/backup-db [destination-dir]
+#
+# The database location is resolved from Rails rather than hardcoded, so this
+# keeps working when a host changes its storage path or RAILS_ENV.
+#
+# Note this backs up the DATABASE only. Active Storage uploads (avatars, post
+# images) live under storage/ and are separate files — back those up with the
+# same cadence. See docs/deployment.md.
+set -euo pipefail
+
+APP_ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
+cd "$APP_ROOT"
+
+RAILS_ENV="${RAILS_ENV:-development}"
+BACKUP_DIR="${1:-$APP_ROOT/backups}"
+KEEP=10
+
+if ! command -v sqlite3 >/dev/null 2>&1; then
+  echo "error: sqlite3 CLI is required for a consistent online backup" >&2
+  exit 1
+fi
+
+DB="$(RAILS_ENV="$RAILS_ENV" bin/rails runner 'print ActiveRecord::Base.connection_db_config.database' 2>/dev/null || true)"
+
+if [ -z "$DB" ] || [ ! -f "$DB" ]; then
+  echo "error: database not found for RAILS_ENV=$RAILS_ENV (resolved: '${DB:-none}')" >&2
+  exit 1
+fi
+
 mkdir -p "$BACKUP_DIR"
+BACKUP_FILE="$BACKUP_DIR/elphame-$(date +%Y%m%d-%H%M%S).sqlite3"
 
-# Use sqlite3 .backup for consistent copy (handles WAL properly)
-BACKUP_FILE="$BACKUP_DIR/elphame-$(date +%Y%m%d-%H%M%S).db"
-sqlite3 "$DB" ".backup '$BACKUP_FILE'" 2>/dev/null
+# .backup takes a consistent snapshot even with WAL writers active.
+sqlite3 "$DB" ".backup '$BACKUP_FILE'"
 
-if [ $? -eq 0 ] && [ -s "$BACKUP_FILE" ]; then
-  # Verify backup has data
-  COUNT=$(sqlite3 "$BACKUP_FILE" "SELECT COUNT(*) FROM discussions;" 2>/dev/null)
-  if [ "$COUNT" -gt 0 ]; then
-    echo "Backup OK: $BACKUP_FILE ($COUNT discussions)"
-    # Keep only last 10
-    ls -t "$BACKUP_DIR"/elphame-*.db | tail -n +11 | xargs rm -f 2>/dev/null
-  else
-    echo "WARNING: Backup has 0 discussions, keeping anyway"
-  fi
-else
-  echo "ERROR: Backup failed"
+if [ ! -s "$BACKUP_FILE" ]; then
+  echo "error: backup is empty, discarding $BACKUP_FILE" >&2
   rm -f "$BACKUP_FILE"
   exit 1
 fi
+
+# A backup that cannot be opened is worse than no backup, so verify it.
+INTEGRITY="$(sqlite3 "$BACKUP_FILE" 'PRAGMA integrity_check;' 2>/dev/null || echo failed)"
+if [ "$INTEGRITY" != "ok" ]; then
+  echo "error: backup failed integrity_check ($INTEGRITY), discarding $BACKUP_FILE" >&2
+  rm -f "$BACKUP_FILE"
+  exit 1
+fi
+
+TABLES="$(sqlite3 "$BACKUP_FILE" "SELECT count(*) FROM sqlite_master WHERE type='table';")"
+SIZE="$(du -h "$BACKUP_FILE" | cut -f1)"
+
+# Rotate: keep the newest $KEEP, drop the rest.
+find "$BACKUP_DIR" -maxdepth 1 -name 'elphame-*.sqlite3' -printf '%T@ %p\n' 2>/dev/null \
+  | sort -rn | tail -n +$((KEEP + 1)) | cut -d' ' -f2- | xargs -r rm -f
+
+echo "Backup OK: $BACKUP_FILE ($SIZE, $TABLES tables, integrity ok, from $DB)"

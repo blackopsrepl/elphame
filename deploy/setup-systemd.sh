@@ -1,222 +1,169 @@
-#!/bin/bash
+#!/usr/bin/env bash
+#
+# Install and manage the Elphame systemd service. Must run as root.
+#
+# Reads the unit files from the deploy/ directory next to this script, so the
+# script works from a checkout in any location. See deploy/README.md and
+# docs/deployment.md.
+set -euo pipefail
 
-# Setup script for Elphame systemd service
-set -e
-
-# Colors for output
 RED='\033[0;31m'
 GREEN='\033[0;32m'
 YELLOW='\033[1;33m'
-NC='\033[0m' # No Color
+NC='\033[0m'
 
-# Configuration
 APP_NAME="elphame"
-APP_PATH="/srv/lab/dev/elphame"
-SERVICE_FILE="elphame.service"
-ENV_SERVICE_FILE="elphame-with-env.service"
+# Resolve the checkout from this script's location rather than hardcoding a host
+# path: the units live in deploy/, so the checkout is one level up.
+DEPLOY_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+APP_PATH="$(cd "$DEPLOY_DIR/.." && pwd)"
+SERVICE_FILE="$DEPLOY_DIR/elphame.service"
+ENV_SERVICE_FILE="$DEPLOY_DIR/elphame-with-env.service"
+ENV_EXAMPLE="$DEPLOY_DIR/elphame.env.example"
 SYSTEMD_PATH="/etc/systemd/system"
-DEPLOY_USER="deploy"
 
-echo -e "${GREEN}Elphame Systemd Service Setup${NC}"
-echo "================================"
+# Adjust these for your host before running.
+DEPLOY_USER="${ELPHAME_DEPLOY_USER:-deploy}"
+RUBY_MANAGER="${ELPHAME_RUBY_MANAGER:-rbenv}"
 
-# Function to check if running as root
+echo -e "${GREEN}Elphame systemd service setup${NC}"
+echo "======================================="
+echo "checkout:   $APP_PATH"
+echo "deploy dir: $DEPLOY_DIR"
+echo "deploy user: $DEPLOY_USER"
+echo
+
 check_root() {
-    if [[ $EUID -ne 0 ]]; then
-        echo -e "${RED}This script must be run as root${NC}"
-        exit 1
-    fi
+  if [[ $EUID -ne 0 ]]; then
+    echo -e "${RED}This script must be run as root${NC}" >&2
+    exit 1
+  fi
 }
 
-# Function to create deploy user if it doesn't exist
+require_units() {
+  for f in "$SERVICE_FILE" "$ENV_SERVICE_FILE" "$ENV_EXAMPLE"; do
+    if [[ ! -f "$f" ]]; then
+      echo -e "${RED}missing unit file: $f${NC}" >&2
+      exit 1
+    fi
+  done
+}
+
 create_deploy_user() {
-    if ! id "$DEPLOY_USER" &>/dev/null; then
-        echo -e "${YELLOW}Creating deploy user...${NC}"
-        useradd -m -s /bin/bash $DEPLOY_USER
-        echo -e "${GREEN}Deploy user created${NC}"
-    else
-        echo -e "${GREEN}Deploy user already exists${NC}"
-    fi
+  if id "$DEPLOY_USER" &>/dev/null; then
+    echo -e "${GREEN}user $DEPLOY_USER already exists${NC}"
+  else
+    echo -e "${YELLOW}creating user $DEPLOY_USER...${NC}"
+    useradd -m -s /bin/bash "$DEPLOY_USER"
+  fi
 }
 
-# Function to setup Ruby environment
 setup_ruby() {
-    echo -e "${YELLOW}Setting up Ruby environment...${NC}"
-    
-    # Check if rbenv is installed for deploy user
-    if ! su - $DEPLOY_USER -c "command -v rbenv" &>/dev/null; then
-        echo -e "${YELLOW}Installing rbenv for deploy user...${NC}"
-        su - $DEPLOY_USER -c "git clone https://github.com/rbenv/rbenv.git ~/.rbenv"
-        su - $DEPLOY_USER -c "git clone https://github.com/rbenv/ruby-build.git ~/.rbenv/plugins/ruby-build"
-        su - $DEPLOY_USER -c "echo 'export PATH=\"\$HOME/.rbenv/bin:\$PATH\"' >> ~/.bashrc"
-        su - $DEPLOY_USER -c "echo 'eval \"\$(rbenv init -)\"' >> ~/.bashrc"
-    fi
-    
-    # Install Ruby version
-    RUBY_VERSION=$(cat $APP_PATH/.ruby-version | tr -d '\n')
-    echo -e "${YELLOW}Installing Ruby $RUBY_VERSION...${NC}"
-    su - $DEPLOY_USER -c "rbenv install -s $RUBY_VERSION"
-    su - $DEPLOY_USER -c "rbenv global $RUBY_VERSION"
-    
-    # Install bundler
-    su - $DEPLOY_USER -c "gem install bundler"
-    
-    echo -e "${GREEN}Ruby environment setup complete${NC}"
+  echo -e "${YELLOW}setting up $RUBY_MANAGER for $DEPLOY_USER...${NC}"
+  case "$RUBY_MANAGER" in
+    rbenv)
+      if ! su - "$DEPLOY_USER" -c "command -v rbenv" &>/dev/null; then
+        su - "$DEPLOY_USER" -c "git clone https://github.com/rbenv/rbenv.git ~/.rbenv"
+        su - "$DEPLOY_USER" -c "git clone https://github.com/rbenv/ruby-build.git ~/.rbenv/plugins/ruby-build"
+        su - "$DEPLOY_USER" -c "echo 'export PATH=\"\$HOME/.rbenv/bin:\$PATH\"' >> ~/.bashrc"
+      fi
+      ruby_version="$(tr -d '[:space:]' < "$APP_PATH/.ruby-version")"
+      echo -e "${YELLOW}installing Ruby ${ruby_version}...${NC}"
+      su - "$DEPLOY_USER" -c "rbenv install -s $ruby_version"
+      su - "$DEPLOY_USER" -c "rbenv global $ruby_version"
+      su - "$DEPLOY_USER" -c "gem install bundler"
+      ;;
+    *)
+      echo -e "${YELLOW}skipping Ruby install for $RUBY_MANAGER (handle it yourself)${NC}"
+      ;;
+  esac
 }
 
-# Function to setup application
 setup_application() {
-    echo -e "${YELLOW}Setting up application...${NC}"
-    
-    # Change ownership
-    chown -R $DEPLOY_USER:$DEPLOY_USER $APP_PATH
-    
-    # Install dependencies
-    echo -e "${YELLOW}Installing gem dependencies...${NC}"
-    su - $DEPLOY_USER -c "cd $APP_PATH && bundle install"
-    
-    # Setup database (if in production)
-    if [[ -f "$APP_PATH/.env.production" ]]; then
-        echo -e "${YELLOW}Running database setup...${NC}"
-        su - $DEPLOY_USER -c "cd $APP_PATH && RAILS_ENV=production bundle exec rails db:create db:migrate"
-        
-        echo -e "${YELLOW}Precompiling assets...${NC}"
-        su - $DEPLOY_USER -c "cd $APP_PATH && RAILS_ENV=production bundle exec rails assets:precompile"
-    fi
-    
-    echo -e "${GREEN}Application setup complete${NC}"
+  echo -e "${YELLOW}installing gem dependencies...${NC}"
+  chown -R "$DEPLOY_USER:$DEPLOY_USER" "$APP_PATH"
+  su - "$DEPLOY_USER" -c "cd '$APP_PATH' && bundle install"
+
+  if [[ -f "$APP_PATH/.env.production" ]]; then
+    echo -e "${YELLOW}preparing the production database...${NC}"
+    # SQLite: db:prepare creates and migrates in one step. There is no db:create
+    # to call separately, and no external database server to provision.
+    su - "$DEPLOY_USER" -c "cd '$APP_PATH' && RAILS_ENV=production bundle exec rails db:prepare"
+    su - "$DEPLOY_USER" -c "cd '$APP_PATH' && RAILS_ENV=production bundle exec rails tailwindcss:build"
+  else
+    echo -e "${YELLOW}no .env.production yet; skipping database and asset build${NC}"
+  fi
 }
 
-# Function to install systemd service
 install_service() {
-    echo -e "${YELLOW}Installing systemd service...${NC}"
-    
-    # Ask which service file to use
-    echo "Which service file would you like to install?"
-    echo "1) Basic service (elphame.service)"
-    echo "2) Service with environment file (elphame-with-env.service)"
-    read -p "Enter choice [1-2]: " choice
-    
-    case $choice in
-        1)
-            SERVICE_TO_INSTALL=$SERVICE_FILE
-            ;;
-        2)
-            SERVICE_TO_INSTALL=$ENV_SERVICE_FILE
-            # Check for environment file
-            if [[ ! -f "$APP_PATH/.env.production" ]]; then
-                echo -e "${YELLOW}Creating .env.production from example...${NC}"
-                cp $APP_PATH/elphame.env.example $APP_PATH/.env.production
-                echo -e "${RED}Please edit $APP_PATH/.env.production with your configuration${NC}"
-                echo "Press any key to continue after editing..."
-                read -n 1
-            fi
-            ;;
-        *)
-            echo -e "${RED}Invalid choice${NC}"
-            exit 1
-            ;;
-    esac
-    
-    # Copy service file
-    cp $APP_PATH/$SERVICE_TO_INSTALL $SYSTEMD_PATH/$APP_NAME.service
-    
-    # Reload systemd
-    systemctl daemon-reload
-    
-    echo -e "${GREEN}Service installed successfully${NC}"
+  echo -e "${YELLOW}installing the systemd service...${NC}"
+  echo "1) basic unit (development, no env file) — elphame.service"
+  echo "2) hardened unit (production, reads .env.production) — elphame-with-env.service"
+  read -r -p "choice [1-2]: " choice
+
+  case "$choice" in
+    1) source_unit="$SERVICE_FILE" ;;
+    2)
+      source_unit="$ENV_SERVICE_FILE"
+      if [[ ! -f "$APP_PATH/.env.production" ]]; then
+        echo -e "${YELLOW}creating .env.production from the template...${NC}"
+        cp "$ENV_EXAMPLE" "$APP_PATH/.env.production"
+        chown "$DEPLOY_USER:$DEPLOY_USER" "$APP_PATH/.env.production"
+        echo -e "${RED}edit $APP_PATH/.env.production now: set SECRET_KEY_BASE and RAILS_HOST${NC}"
+        read -r -n 1 -p "press any key when done..."
+        echo
+      fi
+      ;;
+    *)
+      echo -e "${RED}invalid choice${NC}" >&2
+      exit 1
+      ;;
+  esac
+
+  install -m 0644 "$source_unit" "$SYSTEMD_PATH/$APP_NAME.service"
+  systemctl daemon-reload
+  echo -e "${GREEN}installed $SYSTEMD_PATH/$APP_NAME.service${NC}"
+  echo -e "${YELLOW}before starting: check User=, WorkingDirectory=, EnvironmentFile= and PATH= in that unit${NC}"
 }
 
-# Function to manage service
 manage_service() {
-    echo -e "${YELLOW}Service Management${NC}"
-    echo "1) Start service"
-    echo "2) Stop service"
-    echo "3) Restart service"
-    echo "4) Enable service (start on boot)"
-    echo "5) Disable service"
-    echo "6) Show service status"
-    echo "7) Show service logs"
-    echo "8) Skip"
-    read -p "Enter choice [1-8]: " choice
-    
-    case $choice in
-        1)
-            systemctl start $APP_NAME
-            echo -e "${GREEN}Service started${NC}"
-            ;;
-        2)
-            systemctl stop $APP_NAME
-            echo -e "${GREEN}Service stopped${NC}"
-            ;;
-        3)
-            systemctl restart $APP_NAME
-            echo -e "${GREEN}Service restarted${NC}"
-            ;;
-        4)
-            systemctl enable $APP_NAME
-            echo -e "${GREEN}Service enabled${NC}"
-            ;;
-        5)
-            systemctl disable $APP_NAME
-            echo -e "${GREEN}Service disabled${NC}"
-            ;;
-        6)
-            systemctl status $APP_NAME
-            ;;
-        7)
-            journalctl -u $APP_NAME -f
-            ;;
-        8)
-            echo "Skipping service management"
-            ;;
-        *)
-            echo -e "${RED}Invalid choice${NC}"
-            ;;
-    esac
+  echo -e "${YELLOW}service management${NC}"
+  echo "1) start  2) stop  3) restart  4) enable on boot  5) disable  6) status  7) logs  8) skip"
+  read -r -p "choice [1-8]: " choice
+  case "$choice" in
+    1) systemctl start "$APP_NAME" ;;
+    2) systemctl stop "$APP_NAME" ;;
+    3) systemctl restart "$APP_NAME" ;;
+    4) systemctl enable "$APP_NAME" ;;
+    5) systemctl disable "$APP_NAME" ;;
+    6) systemctl status "$APP_NAME" || true ;;
+    7) journalctl -u "$APP_NAME" -f ;;
+    8) echo "skipping" ;;
+    *) echo -e "${RED}invalid choice${NC}" >&2 ;;
+  esac
 }
 
-# Main execution
 main() {
-    check_root
-    
-    echo "What would you like to do?"
-    echo "1) Complete setup (user, Ruby, app, service)"
-    echo "2) Install/update service only"
-    echo "3) Manage existing service"
-    read -p "Enter choice [1-3]: " main_choice
-    
-    case $main_choice in
-        1)
-            create_deploy_user
-            setup_ruby
-            setup_application
-            install_service
-            manage_service
-            ;;
-        2)
-            install_service
-            manage_service
-            ;;
-        3)
-            manage_service
-            ;;
-        *)
-            echo -e "${RED}Invalid choice${NC}"
-            exit 1
-            ;;
-    esac
-    
-    echo -e "${GREEN}Setup complete!${NC}"
-    echo ""
-    echo "Useful commands:"
-    echo "  systemctl start $APP_NAME      # Start the service"
-    echo "  systemctl stop $APP_NAME       # Stop the service"
-    echo "  systemctl restart $APP_NAME    # Restart the service"
-    echo "  systemctl status $APP_NAME     # Check service status"
-    echo "  journalctl -u $APP_NAME -f     # View service logs"
-    echo "  systemctl enable $APP_NAME     # Enable service on boot"
+  check_root
+  require_units
+
+  echo "1) complete setup (user, Ruby, app, service)"
+  echo "2) install/update the service only"
+  echo "3) manage an existing service"
+  read -r -p "choice [1-3]: " main_choice
+
+  case "$main_choice" in
+    1) create_deploy_user; setup_ruby; setup_application; install_service; manage_service ;;
+    2) install_service; manage_service ;;
+    3) manage_service ;;
+    *) echo -e "${RED}invalid choice${NC}" >&2; exit 1 ;;
+  esac
+
+  echo
+  echo -e "${GREEN}done${NC}"
+  echo "  systemctl start|stop|restart|status $APP_NAME"
+  echo "  journalctl -u $APP_NAME -f"
+  echo "  bin/health-check.sh                 # from the checkout, as the app user"
 }
 
-# Run main function
-main
+main "$@"
