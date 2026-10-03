@@ -1,0 +1,15 @@
+[Unit]
+Description=Elphame Rails Application
+After=network.target
+
+[Service]
+Type=simple
+User=pvd
+WorkingDirectory=/srv/lab/dev/elphame
+ExecStart=/srv/lab/dev/elphame/bin/rails server -p 3003
+Restart=on-failure
+RestartSec=5
+Environment=RAILS_ENV=development
+
+[Install]
+WantedBy=multi-user.target

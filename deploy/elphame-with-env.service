@@ -1,0 +1,66 @@
+[Unit]
+Description=Elphame Rails Application
+After=network.target postgresql.service redis.service
+Wants=network-online.target
+
+[Service]
+Type=notify
+WatchdogSec=10
+
+# User and group to run the service as
+User=deploy
+Group=deploy
+
+# Working directory
+WorkingDirectory=/srv/lab/dev/elphame
+
+# Environment file (create this from elphame.env.example)
+EnvironmentFile=/srv/lab/dev/elphame/.env.production
+
+# Path to rbenv or system Ruby (adjust based on your Ruby installation)
+Environment="PATH=/home/deploy/.rbenv/shims:/home/deploy/.rbenv/bin:/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin"
+
+# Start command with explicit bundle path
+ExecStart=/home/deploy/.rbenv/shims/bundle exec puma -C config/puma.rb
+
+# Pre-start commands (optional - uncomment if needed)
+# ExecStartPre=/home/deploy/.rbenv/shims/bundle exec rails db:migrate
+# ExecStartPre=/home/deploy/.rbenv/shims/bundle exec rails assets:precompile
+
+# Restart policy
+Restart=always
+RestartSec=10
+
+# Process management
+KillMode=mixed
+KillSignal=SIGTERM
+TimeoutStartSec=90
+TimeoutStopSec=30
+
+# Security hardening
+NoNewPrivileges=true
+PrivateTmp=true
+ProtectSystem=strict
+ProtectHome=true
+ReadWritePaths=/srv/lab/dev/elphame
+# Add more paths if your app needs to write to other locations
+# ReadWritePaths=/var/log/elphame
+
+# Resource limits
+LimitNOFILE=65536
+LimitNPROC=4096
+# Memory limit (adjust as needed)
+MemoryLimit=2G
+MemoryMax=2G
+
+# CPU scheduling (optional)
+CPUWeight=100
+Nice=10
+
+# Logging
+StandardOutput=journal
+StandardError=journal
+SyslogIdentifier=elphame
+
+[Install]
+WantedBy=multi-user.target
