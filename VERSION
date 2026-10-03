@@ -1,0 +1,9 @@
+# The single source of truth for the Elphame application version.
+#
+# This file is owned by the release tool (commit-and-tag-version, configured in
+# .versionrc.js). Do not edit it by hand: a release bumps it together with the
+# generated CHANGELOG.md.
+#
+# Runtime readers: config/initializers/version.rb reads this file and exposes it
+# as Elphame::VERSION and Rails.configuration.x.app_version.
+0.1.0
