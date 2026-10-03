@@ -6,4 +6,4 @@
 #
 # Runtime readers: config/initializers/version.rb reads this file and exposes it
 # as Elphame::VERSION and Rails.configuration.x.app_version.
-0.1.0
+1.0.0
