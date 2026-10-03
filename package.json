@@ -1,0 +1,16 @@
+{
+  "name": "elphame",
+  "version": "0.1.0",
+  "private": true,
+  "description": "Release tooling for the Elphame imageboard. Elphame itself is a Rails app; this manifest exists only to pin the release tool.",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/blackopsrepl/elphame.git"
+  },
+  "scripts": {
+    "release": "commit-and-tag-version"
+  },
+  "devDependencies": {
+    "commit-and-tag-version": "12.7.3"
+  }
+}

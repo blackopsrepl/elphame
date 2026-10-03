@@ -1,0 +1,29 @@
+#!/bin/sh
+# Print the CHANGELOG.md section for one version, for use as a release body.
+#
+# Usage: script/extract-changelog-section <version> [changelog]
+#   e.g. script/extract-changelog-section 1.0.0
+#
+# Accepts both heading shapes commit-and-tag-version emits:
+#   ## 1.0.0 (2026-10-03)                                  (no previous tag)
+#   ## [1.1.0](https://.../compare/v1.0.0...v1.1.0) (date)  (with a previous tag)
+#
+# Prints nothing (and exits 0) when the version has no section, so the caller can
+# decide whether a missing section is fatal. This is what stops an empty release
+# from being published.
+set -eu
+
+version="${1:?usage: extract-changelog-section <version> [changelog]}"
+changelog="${2:-CHANGELOG.md}"
+
+[ -f "$changelog" ] || {
+  echo "no such changelog: $changelog" >&2
+  exit 1
+}
+
+awk -v v="$version" '
+  BEGIN { gsub(/\./, "\\.", v) }
+  $0 ~ "^## +\\[?" v "\\]?([ \t(]|$)" { inside = 1; next }
+  inside && /^## / { exit }
+  inside { print }
+' "$changelog"
