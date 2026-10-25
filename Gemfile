@@ -20,6 +20,9 @@ gem "tailwindcss-rails"
 gem "jbuilder"
 # Pagination [https://github.com/kaminari/kaminari]
 gem "kaminari"
+# Markdown for post bodies, GitHub-flavoured; output is sanitised before render
+gem "kramdown", "~> 2.5"
+gem "kramdown-parser-gfm", "~> 1.1"
 
 # Use Active Model has_secure_password [https://guides.rubyonrails.org/active_model_basics.html#securepassword]
 # gem "bcrypt", "~> 3.1.7"

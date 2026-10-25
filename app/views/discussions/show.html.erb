@@ -54,7 +54,7 @@
           </div>
 
           <div class="prose prose-elphame prose-sm max-w-none">
-            <%= simple_format(first_post.content, class: "text-gray-300 whitespace-pre-wrap leading-relaxed") %>
+            <%= render_markdown(first_post.content, html_class: "text-gray-300 leading-relaxed") %>
           </div>
 
           <% if first_post.image.attached? %>
@@ -95,7 +95,7 @@
             </span>
           </div>
           <div class="prose prose-elphame prose-sm max-w-none">
-            <%= simple_format(@discussion.content, class: "text-gray-300 whitespace-pre-wrap leading-relaxed") %>
+            <%= render_markdown(@discussion.content, html_class: "text-gray-300 leading-relaxed") %>
           </div>
           <% if @discussion.image.attached? %>
             <div class="mt-4">
@@ -181,7 +181,7 @@
 
               <!-- Post Content -->
               <div class="prose prose-elphame prose-sm max-w-none">
-                <%= simple_format(post.content, class: "text-gray-300 whitespace-pre-wrap text-sm leading-relaxed") %>
+                <%= render_markdown(post.content, html_class: "text-gray-300 text-sm leading-relaxed") %>
               </div>
 
               <% if post.image.attached? %>
