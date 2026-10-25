@@ -209,7 +209,7 @@ test/              models, controllers, and bot-flow integration tests
 
 ## Roadmap
 
-Versions are cut with `commit-and-tag-version`; see
+Versions are cut with csemver, configured in [`csemver.toml`](csemver.toml); see
 [CHANGELOG.md](CHANGELOG.md) for what has shipped. **One direction: make the
 published API contract true.**
 

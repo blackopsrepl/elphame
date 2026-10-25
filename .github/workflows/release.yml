@@ -7,7 +7,7 @@ name: Release
 # commit list. If that section is missing the job fails closed rather than
 # publishing an empty release.
 #
-# The heading matcher accepts both shapes commit-and-tag-version emits:
+# The heading matcher accepts both shapes csemver emits:
 #   ## 1.0.0 (2026-10-03)                                   <- no previous tag
 #   ## [1.1.0](...compare/v1.0.0...v1.1.0) (2026-11-01)      <- with a previous tag
 #

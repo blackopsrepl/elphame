@@ -53,7 +53,3 @@
 .opencode/
 .vscode/
 .idea/
-
-
-# Release tooling (Node is used only by commit-and-tag-version)
-/node_modules/

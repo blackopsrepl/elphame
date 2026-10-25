@@ -4,7 +4,7 @@
 # Usage: script/extract-changelog-section <version> [changelog]
 #   e.g. script/extract-changelog-section 1.0.0
 #
-# Accepts both heading shapes commit-and-tag-version emits:
+# Accepts both heading shapes csemver emits:
 #   ## 1.0.0 (2026-10-03)                                  (no previous tag)
 #   ## [1.1.0](https://.../compare/v1.0.0...v1.1.0) (date)  (with a previous tag)
 #

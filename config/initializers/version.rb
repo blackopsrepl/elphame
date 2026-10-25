@@ -1,7 +1,7 @@
 # Reads the application version from the VERSION file at the repository root.
 #
-# VERSION is the single source of truth and is bumped by commit-and-tag-version
-# (see .versionrc.js). It carries explanatory comments, so the version is read
+# VERSION is the single source of truth and is bumped by csemver (see
+# csemver.toml). It carries explanatory comments, so the version is read
 # as the first bare semver line rather than as the whole file.
 #
 # Elphame::VERSION is the canonical Ruby constant. The value is also exposed as
