@@ -11,9 +11,9 @@ module Admin
       realm = resource_class.new(resource_params)
       if realm.save
         log_admin_action("realm_create", target: realm, details: realm.name)
-        redirect_to admin_realm_path(realm), notice: "Realm created."
+        respond_with_saved(realm, notice: "Realm created.", status: :created)
       else
-        render :new, locals: { page: Administrate::Page::Form.new(dashboard, realm) }, status: :unprocessable_entity
+        respond_with_invalid(realm, :new)
       end
     end
 
@@ -21,9 +21,9 @@ module Admin
       realm = requested_resource
       if realm.update(resource_params)
         log_admin_action("realm_update", target: realm, details: realm.name)
-        redirect_to admin_realm_path(realm), notice: "Realm updated."
+        respond_with_saved(realm, notice: "Realm updated.")
       else
-        render :edit, locals: { page: Administrate::Page::Form.new(dashboard, realm) }, status: :unprocessable_entity
+        respond_with_invalid(realm, :edit)
       end
     end
 
@@ -31,7 +31,7 @@ module Admin
       realm = requested_resource
       log_admin_action("realm_destroy", target: realm, details: realm.name)
       realm.destroy
-      redirect_to admin_realms_path, notice: "Realm deleted."
+      respond_with_destroyed(admin_realms_path, notice: "Realm deleted.")
     end
   end
 end

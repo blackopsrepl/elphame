@@ -23,7 +23,7 @@ module Admin
       label = Label.find(params[:label_id])
       discussion.add_label(label.name, user: current_user)
       log_admin_action("label_add", target: discussion, details: "#{label.display_name} on #{discussion.subject}")
-      redirect_to admin_discussion_path(discussion), notice: "Label '#{label.display_name}' added."
+      respond_with_discussion_labels(discussion, "Label '#{label.display_name}' added.")
     end
 
     def create_standalone
@@ -32,9 +32,9 @@ module Admin
       thread_label.applied_at = Time.current
       if thread_label.save
         log_admin_action("label_add", target: thread_label.discussion, details: "#{thread_label.label.display_name} on #{thread_label.discussion.subject}")
-        redirect_to admin_thread_label_path(thread_label), notice: "Thread label created."
+        respond_with_saved(thread_label, notice: "Thread label created.", status: :created)
       else
-        render :new, locals: { page: Administrate::Page::Form.new(dashboard, thread_label) }, status: :unprocessable_entity
+        respond_with_invalid(thread_label, :new)
       end
     end
 
@@ -43,14 +43,21 @@ module Admin
       label = Label.find(params[:label_id])
       discussion.remove_label(label.name)
       log_admin_action("label_remove", target: discussion, details: "#{label.display_name} from #{discussion.subject}")
-      redirect_to admin_discussion_path(discussion), notice: "Label '#{label.display_name}' removed."
+      respond_with_discussion_labels(discussion, "Label '#{label.display_name}' removed.")
     end
 
     def destroy_standalone
       thread_label = requested_resource
       log_admin_action("label_remove", target: thread_label.discussion, details: "#{thread_label.label.display_name} from #{thread_label.discussion.subject}")
       thread_label.destroy
-      redirect_to admin_thread_labels_path, notice: "Thread label removed."
+      respond_with_destroyed(admin_thread_labels_path, notice: "Thread label removed.")
+    end
+
+    def respond_with_discussion_labels(discussion, notice)
+      respond_to do |format|
+        format.html { redirect_to admin_discussion_path(discussion), notice: notice }
+        format.json { render json: discussion_json(discussion.reload) }
+      end
     end
   end
 end

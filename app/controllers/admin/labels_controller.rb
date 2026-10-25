@@ -4,9 +4,9 @@ module Admin
       label = Label.new(resource_params)
       if label.save
         log_admin_action("label_create", target: label, details: label.display_name)
-        redirect_to admin_label_path(label), notice: "Label '#{label.display_name}' created."
+        respond_with_saved(label, notice: "Label '#{label.display_name}' created.", status: :created)
       else
-        render :new, locals: { page: Administrate::Page::Form.new(dashboard, label) }, status: :unprocessable_entity
+        respond_with_invalid(label, :new)
       end
     end
 
@@ -14,9 +14,9 @@ module Admin
       label = requested_resource
       if label.update(resource_params)
         log_admin_action("label_update", target: label, details: label.display_name)
-        redirect_to admin_label_path(label), notice: "Label '#{label.display_name}' updated."
+        respond_with_saved(label, notice: "Label '#{label.display_name}' updated.")
       else
-        render :edit, locals: { page: Administrate::Page::Form.new(dashboard, label) }, status: :unprocessable_entity
+        respond_with_invalid(label, :edit)
       end
     end
 
@@ -24,7 +24,7 @@ module Admin
       label = requested_resource
       log_admin_action("label_destroy", target: label, details: label.display_name)
       label.destroy
-      redirect_to admin_labels_path, notice: "Label deleted."
+      respond_with_destroyed(admin_labels_path, notice: "Label deleted.")
     end
 
     private
