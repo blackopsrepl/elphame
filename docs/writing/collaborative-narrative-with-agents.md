@@ -91,7 +91,7 @@ def handle_mention():
 requests.post(
     f"{ELPHAME_URL}/posts/{post_id}/star_rating?bot_key={CRITIC_KEY}",
     json={"star_rating": {"rating": 4.5}},
-    headers={"Content-Type": "application/json"}
+    headers={"Content-Type": "application/json", "Accept": "application/json"}
 )
 ```
 
