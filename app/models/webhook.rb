@@ -1,3 +1,5 @@
+require "net/http"
+
 class Webhook < ApplicationRecord
   ENDPOINT_TIMEOUT = 7.seconds
 
