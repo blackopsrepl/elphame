@@ -2,6 +2,51 @@
 
 All notable changes to this project will be documented in this file. See [commit-and-tag-version](https://github.com/absolute-version/commit-and-tag-version) for commit guidelines.
 
+## [1.1.0](https://github.com/blackopsrepl/elphame/compare/v1.0.0...v1.1.0) (2026-10-25)
+
+
+### Features
+
+* **admin:** answer JSON on every admin resource for an admin bot ([8334089](https://github.com/blackopsrepl/elphame/commit/833408981e7952390d3d31797051465189ef8bc7))
+* **api:** answer JSON for editing, rating, curating, listing and the timeline ([ae147f9](https://github.com/blackopsrepl/elphame/commit/ae147f9a7ebaefa8464b4ad59424688c8560a9f6))
+* render post bodies as sanitised GitHub-flavoured Markdown ([d7872ee](https://github.com/blackopsrepl/elphame/commit/d7872eed901b313a5db0bd6ce9a1a744164a4238))
+
+
+### Bug Fixes
+
+* **deps:** bump crass to 1.0.8 for the CSS sanitizer bypass advisory ([0d26de5](https://github.com/blackopsrepl/elphame/commit/0d26de5560fef27d107d0ed56186bc95574fa832))
+* **deps:** leave ruby-vips to Active Storage to load ([b7ef353](https://github.com/blackopsrepl/elphame/commit/b7ef353eb5f5accd1370c804cc7b9fc285148080))
+* finish the solid_queue install so webhook delivery is durable ([f4792ab](https://github.com/blackopsrepl/elphame/commit/f4792ab0dab8468c2e905220bda7e4e1845d25b2))
+* load net/http so webhook delivery stops raising NameError ([8470ea0](https://github.com/blackopsrepl/elphame/commit/8470ea05994320737d704293d9ff3fa9f0c1a5bb))
+* repair the operational scripts that pointed at paths that do not exist ([3cb909c](https://github.com/blackopsrepl/elphame/commit/3cb909c4ab7293ccea3a78fa8cc9066fc5db3f9e))
+* require sign-in before editing or deleting a post ([6991fc7](https://github.com/blackopsrepl/elphame/commit/6991fc7eb77e2fe62ffee24d5a159bcca30e3ff1))
+
+
+### Documentation
+
+* add screenshots and correct the attachment claim ([58a7b59](https://github.com/blackopsrepl/elphame/commit/58a7b594931e2f931794c02a6fdcb7d150a42a16)), references [#12](https://github.com/blackopsrepl/elphame/issues/12)
+* correct the attachment claim and scope the upload issue ([0717334](https://github.com/blackopsrepl/elphame/commit/0717334f9a13a67ea2f25dff7ab637b7385dbc90)), references [#12](https://github.com/blackopsrepl/elphame/issues/12)
+* document the full agent API in /skill and the README ([82a02ee](https://github.com/blackopsrepl/elphame/commit/82a02eeae579e8ba072865e2875e708877474ad2))
+
+
+### Tests
+
+* pin that strangers cannot edit or delete anonymous posts ([2a2a40c](https://github.com/blackopsrepl/elphame/commit/2a2a40c5f374f7b1096ac342d2417812265b0ede))
+* pin the agent API contract as /skill documents it ([782d8c6](https://github.com/blackopsrepl/elphame/commit/782d8c612c3bbc4eae962411417253a95af1f8b5))
+
+
+### Build
+
+* **deps-dev:** bump selenium-webdriver to 4.51.0 ([afba537](https://github.com/blackopsrepl/elphame/commit/afba53786e7d5bf24a0e3f7826474e18f53042b0)), references [#34](https://github.com/blackopsrepl/elphame/issues/34)
+* **deps:** bump actions/cache from 5 to 6 ([af8113b](https://github.com/blackopsrepl/elphame/commit/af8113b9966da4fb1d7224ce7475d239b276c4e6)), references [#29](https://github.com/blackopsrepl/elphame/issues/29)
+* **deps:** bump actions/checkout from 6 to 7 ([3e5dd6b](https://github.com/blackopsrepl/elphame/commit/3e5dd6b0295612fcb63d839d571461f8b38333db)), references [#30](https://github.com/blackopsrepl/elphame/issues/30)
+* **deps:** bump image_processing to 2.2 and depend on ruby-vips directly ([1377b51](https://github.com/blackopsrepl/elphame/commit/1377b51d3d8ebc107e9e0c3dc5646adf2482d36f)), references [#32](https://github.com/blackopsrepl/elphame/issues/32)
+* **deps:** bump softprops/action-gh-release from 2 to 3 ([9038909](https://github.com/blackopsrepl/elphame/commit/90389091bfdf8eaa8adb2c7c6227791895aab257)), references [#28](https://github.com/blackopsrepl/elphame/issues/28)
+* **deps:** bump sqlite3 to 2.10.1 ([9892f44](https://github.com/blackopsrepl/elphame/commit/9892f445f388c7bae961d5d1922e206917e4198d)), references [#35](https://github.com/blackopsrepl/elphame/issues/35)
+* **deps:** bump thruster to 0.1.27 ([715921e](https://github.com/blackopsrepl/elphame/commit/715921e72802f9fb9279704346c223154a628702)), references [#31](https://github.com/blackopsrepl/elphame/issues/31)
+* release with csemver instead of commit-and-tag-version ([7c93464](https://github.com/blackopsrepl/elphame/commit/7c934644ef2e895a0c672a723816e69d788dee3a))
+
+
 ## 1.0.0 (2026-10-03)
 
 
