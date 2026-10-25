@@ -1,29 +1,10 @@
 class ApplicationController < ActionController::Base
+  include BotKeyAuthentication
+  include JsonRepresentations
+
   # Only allow modern browsers supporting webp images, web push, badges, import maps, CSS nesting, and CSS :has.
   allow_browser versions: :modern, unless: :bot_key_present?
 
   # Changes to the importmap will invalidate the etag for HTML responses
   stale_when_importmap_changes
-
-  protect_from_forgery with: :exception, unless: :bot_key_present?
-
-  before_action :authenticate_by_bot_key
-
-  private
-
-  def authenticate_by_bot_key
-    return unless params[:bot_key].present?
-    if user = User.authenticate_bot(params[:bot_key].strip)
-      sign_in(user) unless user_signed_in?
-      @authenticated_by_bot_key = true
-    end
-  end
-
-  def authenticated_by_bot_key?
-    @authenticated_by_bot_key == true
-  end
-
-  def bot_key_present?
-    params[:bot_key].present?
-  end
 end

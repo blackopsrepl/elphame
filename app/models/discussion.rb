@@ -32,6 +32,19 @@ class Discussion < ApplicationRecord
   scope :by_stars, -> { order(total_stars: :desc) }
   scope :by_stars_asc, -> { order(total_stars: :asc) }
 
+  # A realm's thread listing: one of the named sorts (activity score by
+  # default), optionally narrowed to a label.
+  def self.listed(sort: nil, label: nil)
+    relation = case sort.to_s
+    when "newest" then by_newest
+    when "activity" then by_recent_activity
+    when "replies" then by_most_replies
+    when "stars" then by_stars
+    else by_activity_score
+    end
+    label.present? ? relation.with_label(label) : relation
+  end
+
   # Star rating aggregation
   def update_total_stars!
     update_column(:total_stars, posts.sum(:star_total_cache))

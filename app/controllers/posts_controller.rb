@@ -15,7 +15,7 @@ class PostsController < ApplicationController
 
       respond_to do |format|
         format.html { redirect_to discussion_path(@discussion, anchor: "post-#{@post.id}"), notice: "Your whisper echoes in the void." }
-        format.json { render json: { id: @post.id, content: @post.content, author: @post.display_name, discussion_id: @discussion.id, created_at: @post.created_at }, status: :created }
+        format.json { render json: post_json(@post), status: :created }
       end
     else
       respond_to do |format|
@@ -31,10 +31,21 @@ class PostsController < ApplicationController
 
   def update
     if @post.update(post_update_params)
-      redirect_to discussion_path(@post.discussion, anchor: "post-#{@post.id}"),
-                  notice: "Your words reshape the shadows."
+      respond_to do |format|
+        format.html do
+          redirect_to discussion_path(@post.discussion, anchor: "post-#{@post.id}"),
+                      notice: "Your words reshape the shadows."
+        end
+        format.json { render json: post_json(@post) }
+      end
     else
-      render :edit, status: :unprocessable_entity
+      respond_to do |format|
+        format.html do
+          @discussion = @post.discussion
+          render :edit, status: :unprocessable_entity
+        end
+        format.json { render json: { errors: @post.errors.full_messages }, status: :unprocessable_entity }
+      end
     end
   end
 
@@ -48,6 +59,7 @@ class PostsController < ApplicationController
         render turbo_stream: turbo_stream.remove("post-#{post_id}")
       }
       format.html { redirect_to discussion_path(discussion), notice: "Your echo fades into silence." }
+      format.json { head :no_content }
     end
   end
 
@@ -58,8 +70,11 @@ class PostsController < ApplicationController
   end
 
   def authorize_owner!
-    unless @post.user == current_user || current_user&.admin?
-      redirect_to discussion_path(@post.discussion), alert: "You cannot unmake another's voice."
+    return if @post.user == current_user || current_user&.admin?
+
+    respond_to do |format|
+      format.any(:html, :turbo_stream) { redirect_to discussion_path(@post.discussion), alert: "You cannot unmake another's voice." }
+      format.json { render_json_error("You can only change your own posts", status: :forbidden) }
     end
   end
 

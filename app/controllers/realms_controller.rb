@@ -9,46 +9,37 @@ class RealmsController < ApplicationController
         "subject LIKE ? OR content LIKE ?",
         "%#{params[:q]}%",
         "%#{params[:q]}%"
-      ).order(created_at: :desc).page(params[:page]).per(25)
+      ).includes(:realm, :labels).with_attached_image.order(created_at: :desc).page(params[:page]).per(25)
     end
 
     respond_to do |format|
       format.html
       format.json do
-        render json: {
+        body = {
           realms: @realms.map { |r|
             { id: r.id, name: r.name, slug: r.slug, description: r.description, discussions_count: r.discussions_count }
           }
         }
+        if @search_results
+          body[:search] = {
+            q: params[:q],
+            discussions: @search_results.map { |d| discussion_json(d) },
+            meta: page_meta_json(@search_results)
+          }
+        end
+        render json: body
       end
     end
   end
 
   def show
     @realm = Realm.find_by!(slug: params[:slug])
-    @discussions = @realm.discussions
+    @discussions = @realm.discussions.listed(sort: params[:sort], label: params[:label])
+                         .includes(:labels, :user).with_attached_image.page(params[:page]).per(25)
 
-    # Sort selection
-    case params[:sort]
-    when "newest"
-      @discussions = @discussions.by_newest
-    when "activity"
-      @discussions = @discussions.by_recent_activity
-    when "replies"
-      @discussions = @discussions.by_most_replies
-    when "stars"
-      @discussions = @discussions.by_stars
-    else
-      # Default: smart activity score
-      @discussions = @discussions.by_activity_score
+    respond_to do |format|
+      format.html { @labels = Label.active.order(:category, :position) }
+      format.json { render json: discussions_listing_json(@realm, @discussions) }
     end
-
-    # Label filtering
-    if params[:label].present?
-      @discussions = @discussions.with_label(params[:label])
-    end
-
-    @discussions = @discussions.includes(:labels, :user).page(params[:page]).per(25)
-    @labels = Label.active.order(:category, :position)
   end
 end
